@@ -1,0 +1,2 @@
+~/.fehbg &
+sxhkd & ; exec bspwm
