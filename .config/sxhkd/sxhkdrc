@@ -14,6 +14,13 @@ super + @space
 super + Escape
 	pkill -USR1 -x sxhkd
 
+# Volume
+XF86AudioLowerVolume
+	amixer -D pulse sset Master 5%-
+
+XF86AudioRaiseVolume
+	amixer -D pulse sset Master 5%+
+
 #
 # bspwm hotkeys
 #
