@@ -13,8 +13,15 @@ exclude_items=(
 # Function to check if an item should be excluded
 should_exclude() {
     local item="$1"
+    
+    # Check if the path contains .git
+    if [[ "$item" == *".git"* ]]; then
+        return 0
+    fi
+    
+    # Check against exclude list
     for exclude in "${exclude_items[@]}"; do
-        if [[ "$item" == "$exclude" ]]; then
+        if [[ "$(basename "$item")" == "$exclude" ]]; then
             return 0
         fi
     done
@@ -25,34 +32,35 @@ should_exclude() {
 create_symlinks() {
     local source_dir="$1"
     local target_dir="$2"
-    local relative_path="${3:-}"
-
-    cd "$source_dir"
     
-    for item in .*(.N) *(.N); do
-        # Skip if the item doesn't exist or is . or ..
-        [[ -e "$item" ]] || continue
-        [[ "$item" == "." || "$item" == ".." ]] && continue
+    # Use find to get all files and directories, excluding .git directory
+    find "$source_dir" -mindepth 1 -not -path '*/\.git/*' -not -name '.git' | while read item; do
+        # Get the relative path from the source directory
+        local relative_path="${item#$source_dir/}"
         
         # Skip excluded items
         should_exclude "$item" && continue
         
-        local source_path="$source_dir/$item"
-        local target_path="$target_dir/$item"
+        # Calculate target path
+        local target_path="$target_dir/$relative_path"
         
-        if [[ -d "$source_path" ]]; then
-            # Create directory in target if it doesn't exist
-            mkdir -p "$target_path"
-            # Recursively process subdirectories
-            create_symlinks "$source_path" "$target_path" "${relative_path:+$relative_path/}$item"
-        else
-            # Remove existing symlink or file
-            if [[ -L "$target_path" || -e "$target_path" ]]; then
-                rm "$target_path"
+        if [[ -d "$item" ]]; then
+            # Create directory in target if it doesn't exist and isn't excluded
+            if ! should_exclude "$(basename "$item")"; then
+                mkdir -p "$target_path"
             fi
-            # Create symlink
-            ln -s "$source_path" "$target_path"
-            echo "Created symlink: $target_path -> $source_path"
+        else
+            # Get the directory part of the target path
+            local target_dir_path="$(dirname "$target_path")"
+            
+            # Create parent directory if it doesn't exist
+            mkdir -p "$target_dir_path"
+            
+            # Only create symlink if it doesn't already exist
+            if [[ ! -e "$target_path" ]]; then
+                ln -s "$item" "$target_path"
+                echo "Created symlink: $target_path -> $item"
+            fi
         fi
     done
 }
