@@ -100,5 +100,6 @@
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace"
+  "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace",
+  "git.confirmSync": false
 }
