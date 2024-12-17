@@ -1,3 +1,5 @@
 [font]
-size = 6
+size = 10
+[font.normal]
+family = "FiraCode Nerd Font"
 

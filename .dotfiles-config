@@ -1,0 +1,12 @@
+# Configuration file for bootstrap.zsh
+# Add any additional items to exclude from symlinking
+
+EXCLUDE_ITEMS=(
+    ".git"
+    "bootstrap.zsh"
+    "$(basename "$DOTFILES_DIR")"
+    ".dotfiles-config"
+    # Add your custom excludes below
+    "README.md"
+    "LICENSE"
+)

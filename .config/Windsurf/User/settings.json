@@ -1,10 +1,10 @@
 {
-  "workbench.colorTheme": "Dracula",
-  "terminal.integrated.fontFamily": "'JetBrains Mono', Monaco, 'Courier New', monospace",
+  "workbench.colorTheme": "Dracula Theme",
+  "terminal.integrated.fontFamily": "'FiraCode Nerd Font'",
+  "editor.fontFamily": "'FiraCode Nerd Font'",
   "editor.fontLigatures": true,
-  "editor.cursorSmoothCaretAnimation": true,
+  "editor.cursorSmoothCaretAnimation": "on",
   "editor.cursorStyle": "line",
-  "editor.renderIndentGuides": true,
   "vim.leader": "<Space>",
   "vim.insertModeKeyBindings": [
     {
@@ -100,6 +100,6 @@
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace",
-  "git.confirmSync": false
+  "git.confirmSync": false,
+  "editor.guides.indentation": true
 }
