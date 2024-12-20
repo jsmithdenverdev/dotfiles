@@ -94,7 +94,6 @@
   },
   "go.formatTool": "goimports",
   "terminal.integrated.shell.osx": "/bin/zsh",
-  "terminal.integrated.fontSize": 13,
   "editor.tabSize": 2,
   "sqltools.useNodeRuntime": true,
   "[html]": {
