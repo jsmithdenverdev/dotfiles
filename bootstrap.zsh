@@ -30,6 +30,7 @@ DEFAULT_EXCLUDE_ITEMS=(
     "bootstrap.zsh"
     "$(basename "$DOTFILES_DIR")"
     ".dotfiles-config"
+    ".DS_Store"
 )
 
 # Logging functions
