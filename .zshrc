@@ -1,3 +1,5 @@
+# Add deno completions to search path
+if [[ ":$FPATH:" != *":/Users/jake/completions:"* ]]; then export FPATH="/Users/jake/completions:$FPATH"; fi
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -107,3 +109,14 @@ export NVM_SYMLINK_CURRENT=true
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
 eval "$(starship init zsh)"
+
+# bun completions
+[ -s "/Users/jake/.bun/_bun" ] && source "/Users/jake/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+. "/Users/jake/.deno/env"
+# Initialize zsh completions (added by deno install script)
+autoload -Uz compinit
+compinit
