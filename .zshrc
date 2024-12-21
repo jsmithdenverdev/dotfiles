@@ -120,3 +120,5 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # Initialize zsh completions (added by deno install script)
 autoload -Uz compinit
 compinit
+# Added by Windsurf
+export PATH="/Users/jake/.codeium/windsurf/bin:$PATH"

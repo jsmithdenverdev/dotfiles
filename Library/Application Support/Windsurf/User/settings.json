@@ -100,5 +100,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "git.confirmSync": false,
-  "editor.guides.indentation": true
+  "editor.guides.indentation": true,
+  "git.autofetch": true
 }
