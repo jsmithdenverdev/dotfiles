@@ -1,8 +1,9 @@
 {
   "workbench.colorTheme": "Dracula Theme",
-  "terminal.integrated.fontFamily": "'FiraCode Nerd Font'",
-  "editor.fontFamily": "'FiraCode Nerd Font'",
+  "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
+  "editor.fontFamily": "'JetBrainsMono Nerd Font'",
   "editor.fontLigatures": true,
+  "terminal.integrated.fontLigatures": true,
   "editor.cursorSmoothCaretAnimation": "on",
   "editor.cursorStyle": "line",
   "vim.leader": "<Space>",
@@ -101,5 +102,24 @@
   },
   "git.confirmSync": false,
   "editor.guides.indentation": true,
-  "git.autofetch": true
+  "git.autofetch": true,
+  "extensions.ignoreRecommendations": true,
+  "aws.telemetry": false,
+  "windsurf.autoExecutionPolicy": "off",
+  "windsurf.chatFontSize": "default",
+  "windsurf.explainAndFixInCurrentConversation": true,
+  "windsurf.autocompleteSpeed": "default",
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "go.toolsManagement.autoUpdate": true,
+  "svelte.enable-ts-plugin": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "explorer.confirmDragAndDrop": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "git.openRepositoryInParentFolders": "always"
 }

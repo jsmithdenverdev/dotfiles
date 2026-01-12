@@ -1,3 +1,13 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Homebrew
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 # Add deno completions to search path
 if [[ ":$FPATH:" != *":/Users/jake/completions:"* ]]; then export FPATH="/Users/jake/completions:$FPATH"; fi
 # If you come from bash you might have to change your $PATH.
@@ -10,7 +20,7 @@ export ZSH=(~/.oh-my-zsh)
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME=""
+ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -81,13 +91,6 @@ source $ZSH/oh-my-zsh.sh
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
-
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
 
@@ -108,10 +111,13 @@ export NVM_SYMLINK_CURRENT=true
 # PATH
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
-eval "$(starship init zsh)"
-
 # bun completions
 [ -s "/Users/jake/.bun/_bun" ] && source "/Users/jake/.bun/_bun"
+
+# Go
+export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:$(go env GOPATH)/bin
+
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
@@ -122,3 +128,24 @@ autoload -Uz compinit
 compinit
 # Added by Windsurf
 export PATH="/Users/jake/.codeium/windsurf/bin:$PATH"
+
+# Colima docker host
+export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
+export DOCKER_SOCKET_LOCATION="$HOME/.colima/default/docker.sock"
+export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/jake/.lmstudio/bin"
+# End of LM Studio CLI section
+
+
+export PATH="/Users/jake/.config/herd-lite/bin:$PATH"
+export PHP_INI_SCAN_DIR="/Users/jake/.config/herd-lite/bin:$PHP_INI_SCAN_DIR"
+
+
+
+# Editor
+export EDITOR="nvim"

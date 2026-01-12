@@ -77,7 +77,9 @@ set visualbell
 set cmdheight=2
 
 " Use <F11> to toggle between 'paste' and 'nopaste'
-set pastetoggle=<F11>
+" Doesn't seem to be working at the moment. This causes an error when
+" initializing neovim.
+" set pastetoggle=<F11>
 
 " ---------------------------
 " Tabs and Spaces

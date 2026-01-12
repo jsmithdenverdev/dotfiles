@@ -50,6 +50,8 @@ let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
 let g:ale_fixers = {
 \   'javascript': ['prettier'],
 \   'typescript': ['prettier'],
+\   'jsonc': ['jq'],
+\   'json': ['jq'],
 \   'css': ['prettier'],
 \}
 
