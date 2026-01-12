@@ -1,7 +1,9 @@
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
+# shellcheck disable=SC2296
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  # shellcheck disable=SC2296,SC1090
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
@@ -14,12 +16,13 @@ if [[ ":$FPATH:" != *":/Users/jake/completions:"* ]]; then export FPATH="/Users/
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH=(~/.oh-my-zsh)
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+# shellcheck disable=SC2034
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Set list of themes to pick from when loading at random
@@ -80,9 +83,11 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+# shellcheck disable=SC2034
 plugins=(git)
 
-source $ZSH/oh-my-zsh.sh
+# shellcheck disable=SC2128
+source "$ZSH/oh-my-zsh.sh"
 
 # User configuration
 
@@ -116,7 +121,10 @@ export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
 # Go
 export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$(go env GOPATH)/bin
+if command -v go >/dev/null 2>&1; then
+    gopath=$(go env GOPATH)
+    export PATH=$PATH:$gopath/bin
+fi
 
 
 # bun
@@ -135,6 +143,7 @@ export DOCKER_SOCKET_LOCATION="$HOME/.colima/default/docker.sock"
 export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+# shellcheck disable=SC1090
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Added by LM Studio CLI (lms)

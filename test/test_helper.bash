@@ -3,7 +3,8 @@
 # Common setup for all tests
 setup() {
     # Create isolated test environment
-    export TEST_TEMP_DIR="$(mktemp -d)"
+    TEST_TEMP_DIR="$(mktemp -d)"
+    export TEST_TEMP_DIR
     export ORIGINAL_HOME="$HOME"
     export HOME="$TEST_TEMP_DIR"
     
@@ -34,6 +35,7 @@ assert_file_exists() {
 # Helper function to assert output contains string
 assert_output_contains() {
     local expected="$1"
+    # shellcheck disable=SC2154
     [[ "$output" == *"$expected"* ]] || {
         echo "Expected output to contain: $expected"
         echo "Actual output: $output"
