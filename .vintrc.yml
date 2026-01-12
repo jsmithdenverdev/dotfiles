@@ -1,0 +1,14 @@
+cmdargs:
+  # Severity level: warning (don't fail on style issues)
+  severity: style_problem
+  
+  # Color output
+  color: true
+  
+  # Enable/disable specific policies
+  policies:
+    # Disable overly strict rules
+    ProhibitImplicitScopeVariable:
+      enabled: false
+    ProhibitUnnecessaryDoubleQuote:
+      enabled: false

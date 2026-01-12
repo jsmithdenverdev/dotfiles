@@ -80,6 +80,61 @@ git add <files>
 git commit -m "description: brief summary of changes"
 ```
 
+### CI/CD & Testing
+
+**Run all linters locally:**
+```bash
+# Run all linters with helper script
+./scripts/lint.sh
+
+# Or run individually:
+shellcheck bootstrap.zsh .zshrc
+vint .vimrc .config/vim/*.vim .config/nvim/init.vim
+taplo fmt --check .config/**/*.toml
+```
+
+**Run tests locally:**
+```bash
+# Run all tests
+bats test/
+
+# Run with verbose output
+bats -t test/
+
+# Run specific test file
+bats test/bootstrap.bats
+```
+
+**CI Pipeline:**
+- All PRs must pass CI checks before merging to `master`
+- Required status checks: `lint-shell`, `lint-vim`, `lint-toml`, `test`
+- Tests run on Ubuntu latest
+- Workflow defined in `.github/workflows/ci.yml`
+
+**Writing Tests:**
+- Test files go in `test/` directory
+- Use Bats framework (Bash Automated Testing System)
+- Follow existing test patterns in `test/bootstrap.bats`
+- Helper functions available in `test/test_helper.bash`
+- Tests should be idempotent and isolated
+
+**Local Development Requirements:**
+```bash
+# Install ShellCheck (macOS)
+brew install shellcheck
+
+# Install Vint
+pip install vim-vint
+
+# Install taplo
+cargo install taplo-cli --locked
+# OR: npm install -g @taplo/cli
+
+# Install Bats
+brew install bats-core
+# OR: npm install -g bats
+```
+
 ## Code Style Guidelines
 
 ### Shell Scripts (Zsh/Bash)
