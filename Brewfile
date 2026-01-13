@@ -22,8 +22,6 @@ brew "htop"          # Process viewer
 
 # Development Tools
 brew "mise"          # Version manager for programming languages
-brew "gh"            # GitHub CLI
-brew "gh-dash"       # GitHub Dashboard extension for gh
 
 # Databases
 brew "postgresql@15"
