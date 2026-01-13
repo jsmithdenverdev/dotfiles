@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 
 # Exit on error, undefined variable, or pipe failure
 set -euo pipefail
@@ -37,7 +37,8 @@ DEFAULT_EXCLUDE_ITEMS=(
 log() {
     local level="$1"
     local message="$2"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[${timestamp}] [${level}] ${message}" >> "$LOG_FILE"
     
     if [[ "$VERBOSE" == "true" ]] || [[ "$level" == "ERROR" ]]; then
@@ -83,6 +84,7 @@ done
 
 # Load configuration file if it exists
 if [[ -f "$CONFIG_FILE" ]]; then
+    # shellcheck source=/dev/null
     source "$CONFIG_FILE"
     exclude_items=("${EXCLUDE_ITEMS[@]}")
 else
@@ -92,7 +94,8 @@ fi
 # Backup function
 backup_file() {
     local file="$1"
-    local backup="${file}.backup-$(date +%Y%m%d%H%M%S)"
+    local backup
+    backup="${file}.backup-$(date +%Y%m%d%H%M%S)"
     
     if [[ -e "$file" ]]; then
         if [[ "$DRY_RUN" == "true" ]]; then
@@ -181,7 +184,8 @@ create_symlinks() {
         fi
         
         # Create parent directory if needed
-        local target_dir_path="$(dirname "$target_path")"
+        local target_dir_path
+        target_dir_path="$(dirname "$target_path")"
         if [[ ! -d "$target_dir_path" ]]; then
             if [[ "$DRY_RUN" == "true" ]]; then
                 log "INFO" "Would create directory: $target_dir_path"
