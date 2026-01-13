@@ -55,9 +55,7 @@ print_color() {
 # Print banner
 banner() {
     echo ""
-    print_color "${BLUE}╔════════════════════════════════════════╗${NC}"
-    print_color "${BLUE}║${NC}    Dotfiles Installation Script      ${BLUE}║${NC}"
-    print_color "${BLUE}╔════════════════════════════════════════╗${NC}"
+    print_color "${BLUE}##  Dotfiles Installation Script  ##${NC}"
     echo ""
 }
 
