@@ -163,3 +163,8 @@ export VISUAL="code"
 
 # Maintenance - update everything with one command
 alias update="topgrade"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/jake/.lmstudio/bin"
+# End of LM Studio CLI section
+
