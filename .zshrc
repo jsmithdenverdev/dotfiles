@@ -13,7 +13,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # Add deno completions to search path
-if [[ ":$FPATH:" != *":/Users/jake/completions:"* ]]; then export FPATH="/Users/jake/completions:$FPATH"; fi
+if [[ -d "$HOME/.deno/completions" ]] && [[ ":$FPATH:" != *":$HOME/.deno/completions:"* ]]; then
+    export FPATH="$HOME/.deno/completions:$FPATH"
+fi
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -121,7 +123,7 @@ source "$ZSH/oh-my-zsh.sh"
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
 # bun completions
-[ -s "/Users/jake/.bun/_bun" ] && source "/Users/jake/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # Go - managed by mise
 # mise automatically sets GOROOT and GOPATH
@@ -143,9 +145,10 @@ export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 # shellcheck disable=SC1090
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/jake/.lmstudio/bin"
-# End of LM Studio CLI section
+# LM Studio CLI (lms)
+if [[ -d "$HOME/.lmstudio/bin" ]]; then
+    export PATH="$PATH:$HOME/.lmstudio/bin"
+fi
 
 
 # mise - version manager for programming languages
