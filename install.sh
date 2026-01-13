@@ -19,6 +19,7 @@ LOG_FILE="$HOME/.dotfiles_install.log"
 # Flags
 DRY_RUN=false
 VERBOSE=false
+export INTERACTIVE=true
 
 # Logging functions
 log() {
@@ -70,14 +71,16 @@ Usage: $(basename "$0") [OPTIONS]
 Install dotfiles dependencies for macOS or Arch Linux.
 
 OPTIONS:
-    -h, --help         Show this help message
-    -n, --dry-run      Show what would be installed without doing it
-    -v, --verbose      Show detailed output
+    -h, --help              Show this help message
+    -n, --dry-run           Show what would be installed without doing it
+    -v, --verbose           Show detailed output
+    --non-interactive       Disable interactive prompts (for CI/automation)
 
 EXAMPLES:
-    ./install.sh                  # Install all dependencies
-    ./install.sh --dry-run        # Preview installation
-    ./install.sh --verbose        # Detailed output
+    ./install.sh                     # Install all dependencies
+    ./install.sh --dry-run           # Preview installation
+    ./install.sh --verbose           # Detailed output
+    ./install.sh --non-interactive   # Run without prompts
 
 EOF
 }
@@ -98,6 +101,10 @@ while [[ $# -gt 0 ]]; do
             VERBOSE=true
             shift
             ;;
+        --non-interactive)
+            INTERACTIVE=false
+            shift
+            ;;
         *)
             print_color "${RED}Unknown option: $1${NC}"
             usage
@@ -114,6 +121,66 @@ detect_os() {
         echo "arch"
     else
         echo "unknown"
+    fi
+}
+
+# Bootstrap gum (install it first so we can use it)
+bootstrap_gum() {
+    # Check if gum is already installed
+    if command -v gum &>/dev/null; then
+        log "INFO" "gum already installed"
+        return 0
+    fi
+    
+    log "INFO" "Installing gum (TUI framework)..."
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY RUN] Would install gum"
+        return 0
+    fi
+    
+    local os
+    os=$(detect_os)
+    
+    case "$os" in
+        macos)
+            if command -v brew &>/dev/null; then
+                brew install gum
+                log "SUCCESS" "gum installed via Homebrew"
+            else
+                log "WARN" "Homebrew not available, skipping gum installation"
+                return 1
+            fi
+            ;;
+        arch)
+            if command -v yay &>/dev/null; then
+                yay -S --noconfirm gum
+                log "SUCCESS" "gum installed via yay"
+            elif command -v pacman &>/dev/null; then
+                sudo pacman -S --noconfirm gum
+                log "SUCCESS" "gum installed via pacman"
+            else
+                log "WARN" "No package manager available, skipping gum installation"
+                return 1
+            fi
+            ;;
+        *)
+            log "WARN" "Unsupported OS for gum installation"
+            return 1
+            ;;
+    esac
+}
+
+# Source UI library (after gum is installed)
+source_ui_lib() {
+    local ui_lib="$SCRIPT_DIR/lib/ui.sh"
+    
+    if [[ -f "$ui_lib" ]]; then
+        # shellcheck source=lib/ui.sh
+        source "$ui_lib"
+        log "INFO" "UI library loaded"
+    else
+        log "WARN" "UI library not found at $ui_lib"
     fi
 }
 
@@ -143,7 +210,21 @@ install_macos_packages() {
         return 0
     fi
     
-    brew bundle --file="$SCRIPT_DIR/Brewfile"
+    # Show package preview if interactive and ui functions are available
+    if declare -f ui_confirm &>/dev/null; then
+        if ! ui_confirm "Install packages from Brewfile?"; then
+            log "WARN" "Package installation skipped by user"
+            return 0
+        fi
+    fi
+    
+    # Use spinner if available
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing Homebrew packages..." brew bundle --file="$SCRIPT_DIR/Brewfile"
+    else
+        brew bundle --file="$SCRIPT_DIR/Brewfile"
+    fi
+    
     log "SUCCESS" "macOS packages installed"
 }
 
@@ -178,17 +259,24 @@ install_arch_packages() {
     
     if [[ "$DRY_RUN" == "true" ]]; then
         log "INFO" "[DRY RUN] Would install packages from packages-arch.txt"
-        log "INFO" "[DRY RUN] Would install AUR packages from packages-aur.txt"
         return 0
     fi
     
-    # Install official repo packages
-    log "INFO" "Installing official repository packages..."
-    yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
+    # Show package preview if interactive
+    if declare -f ui_confirm &>/dev/null; then
+        if ! ui_confirm "Install packages from packages-arch.txt?"; then
+            log "WARN" "Package installation skipped by user"
+            return 0
+        fi
+    fi
     
-    # Install AUR packages
-    log "INFO" "Installing AUR packages..."
-    yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-aur.txt"
+    # Install all packages (yay handles both official repos and AUR)
+    log "INFO" "Installing packages (official repos + AUR)..."
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing packages..." yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
+    else
+        yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
+    fi
     
     log "SUCCESS" "Arch Linux packages installed"
 }
@@ -206,7 +294,11 @@ install_ohmyzsh() {
         return 0
     fi
     
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing oh-my-zsh..." sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    else
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    fi
     log "SUCCESS" "oh-my-zsh installed"
 }
 
@@ -225,7 +317,11 @@ install_powerlevel10k() {
         return 0
     fi
     
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing powerlevel10k..." git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"
+    else
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"
+    fi
     log "SUCCESS" "powerlevel10k installed"
 }
 
@@ -250,7 +346,11 @@ install_mise_tools() {
         return 0
     fi
     
-    mise install
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing mise tools..." mise install
+    else
+        mise install
+    fi
     log "SUCCESS" "mise tools installed"
 }
 
@@ -296,6 +396,12 @@ main() {
     
     local os_type
     os_type=$(detect_os)
+    
+    # Bootstrap gum first so we can use it for the rest of the script
+    bootstrap_gum
+    
+    # Source UI library (provides ui_* functions)
+    source_ui_lib
     
     case "$os_type" in
         macos)

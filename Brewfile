@@ -21,8 +21,9 @@ brew "htop"          # Process viewer
 brew "mise"          # Version manager for programming languages
 brew "gh"            # GitHub CLI
 
-# Databases
-brew "postgresql"    # Latest version
+# Linting Tools
+brew "shellcheck"    # Shell script linter
+brew "taplo"         # TOML linter
 
 # Docker (via colima instead of Docker Desktop)
 brew "docker"        # Docker CLI
@@ -40,6 +41,9 @@ cask "lm-studio"     # AI model runner
 
 # Fonts
 cask "font-fira-code-nerd-font"
+
+# Testing Tools
+brew "bats-core"     # Bash Automated Testing System
 
 # Maintenance
 brew "topgrade"      # Universal updater
