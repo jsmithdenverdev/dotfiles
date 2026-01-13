@@ -19,7 +19,7 @@ LOG_FILE="$HOME/.dotfiles_install.log"
 # Flags
 DRY_RUN=false
 VERBOSE=false
-INTERACTIVE=true
+export INTERACTIVE=true
 
 # Logging functions
 log() {
