@@ -67,7 +67,6 @@ OPTIONS:
     -h, --help         Show this help message
     -n, --dry-run      Show what would be installed without doing it
     -v, --verbose      Show detailed output
-    --skip-optional    Skip optional package installation
 
 EXAMPLES:
     ./install.sh                  # Install all dependencies
@@ -78,7 +77,6 @@ EOF
 }
 
 # Parse command line arguments
-SKIP_OPTIONAL=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         -h|--help)
@@ -92,10 +90,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         -v|--verbose)
             VERBOSE=true
-            shift
-            ;;
-        --skip-optional)
-            SKIP_OPTIONAL=true
             shift
             ;;
         *)
