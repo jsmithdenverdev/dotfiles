@@ -210,7 +210,21 @@ install_macos_packages() {
         return 0
     fi
     
-    brew bundle --file="$SCRIPT_DIR/Brewfile"
+    # Show package preview if interactive and ui functions are available
+    if declare -f ui_confirm &>/dev/null; then
+        if ! ui_confirm "Install packages from Brewfile?"; then
+            log "WARN" "Package installation skipped by user"
+            return 0
+        fi
+    fi
+    
+    # Use spinner if available
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing Homebrew packages..." brew bundle --file="$SCRIPT_DIR/Brewfile"
+    else
+        brew bundle --file="$SCRIPT_DIR/Brewfile"
+    fi
+    
     log "SUCCESS" "macOS packages installed"
 }
 
@@ -249,13 +263,29 @@ install_arch_packages() {
         return 0
     fi
     
+    # Show package preview if interactive
+    if declare -f ui_confirm &>/dev/null; then
+        if ! ui_confirm "Install packages from packages-arch.txt and packages-aur.txt?"; then
+            log "WARN" "Package installation skipped by user"
+            return 0
+        fi
+    fi
+    
     # Install official repo packages
     log "INFO" "Installing official repository packages..."
-    yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing official packages..." yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
+    else
+        yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
+    fi
     
     # Install AUR packages
     log "INFO" "Installing AUR packages..."
-    yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-aur.txt"
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing AUR packages..." yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-aur.txt"
+    else
+        yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-aur.txt"
+    fi
     
     log "SUCCESS" "Arch Linux packages installed"
 }
@@ -273,7 +303,11 @@ install_ohmyzsh() {
         return 0
     fi
     
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing oh-my-zsh..." sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    else
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    fi
     log "SUCCESS" "oh-my-zsh installed"
 }
 
@@ -292,7 +326,11 @@ install_powerlevel10k() {
         return 0
     fi
     
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing powerlevel10k..." git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"
+    else
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"
+    fi
     log "SUCCESS" "powerlevel10k installed"
 }
 
@@ -317,7 +355,11 @@ install_mise_tools() {
         return 0
     fi
     
-    mise install
+    if declare -f ui_spin &>/dev/null; then
+        ui_spin "Installing mise tools..." mise install
+    else
+        mise install
+    fi
     log "SUCCESS" "mise tools installed"
 }
 
