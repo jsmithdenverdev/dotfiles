@@ -248,6 +248,39 @@ install_mise_tools() {
     log "SUCCESS" "mise tools installed"
 }
 
+# Install gh extensions
+install_gh_extensions() {
+    if ! command -v gh &>/dev/null; then
+        log "WARN" "gh CLI not found, skipping extension installation"
+        return 0
+    fi
+    
+    log "INFO" "Installing gh extensions..."
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY RUN] Would install gh extensions"
+        return 0
+    fi
+    
+    # Array of extensions to install
+    local extensions=(
+        "dlvhdr/gh-dash"
+        # Add more extensions here in the future
+    )
+    
+    for ext in "${extensions[@]}"; do
+        local ext_name="${ext##*/}"  # Extract name after /
+        
+        if gh extension list | grep -q "$ext"; then
+            log "INFO" "gh extension '$ext_name' already installed"
+        else
+            log "INFO" "Installing gh extension: $ext_name..."
+            gh extension install "$ext"
+            log "SUCCESS" "gh extension '$ext_name' installed"
+        fi
+    done
+}
+
 # Main installation flow
 main() {
     banner
@@ -282,6 +315,9 @@ main() {
     
     # Install mise development tools
     install_mise_tools
+    
+    # Install gh extensions
+    install_gh_extensions
     
     echo ""
     log "SUCCESS" "Installation complete!"

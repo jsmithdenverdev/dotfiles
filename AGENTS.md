@@ -352,10 +352,43 @@ mise list
    [tools]
    rust = "latest"
    ```
-   
-3. **Test**: Run `./install.sh --dry-run`
 
-4. **Commit**: Update relevant files
+3. **GitHub CLI extension**: Edit install.sh
+   ```bash
+   local extensions=(
+       "dlvhdr/gh-dash"
+       "owner/repo-name"  # Add new extension
+   )
+   ```
+   
+4. **Test**: Run `./install.sh --dry-run`
+
+5. **Commit**: Update relevant files
+
+### GitHub CLI Extensions
+
+gh extensions are managed via `gh extension install` in the `install_gh_extensions()` function in `install.sh`.
+
+**Why use extensions instead of packages?**
+- gh extensions use `gh extension install` as the official method
+- Many extensions are not packaged separately in package managers
+- Extensions auto-update via `gh extension upgrade` (included in topgrade)
+- Keeps extension management consistent across macOS and Arch
+
+**Adding a new gh extension:**
+
+1. Edit `install.sh`
+2. Add to `extensions` array in `install_gh_extensions()`:
+   ```bash
+   local extensions=(
+       "dlvhdr/gh-dash"
+       "new/extension"
+   )
+   ```
+3. Run `./install.sh` or manually: `gh extension install new/extension`
+
+**Installed extensions:**
+- `dlvhdr/gh-dash` - Interactive GitHub dashboard
 
 ### CI Dependencies
 

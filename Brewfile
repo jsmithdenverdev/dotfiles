@@ -22,9 +22,10 @@ brew "htop"          # Process viewer
 
 # Development Tools
 brew "mise"          # Version manager for programming languages
+brew "gh"            # GitHub CLI
 
 # Databases
-brew "postgresql@15"
+brew "postgresql"    # Latest version
 
 # Docker
 cask "docker"
@@ -34,6 +35,9 @@ cask "alacritty"
 
 # Editor
 cask "visual-studio-code"
+
+# AI Tools
+cask "lm-studio"     # AI model runner
 
 # Fonts
 cask "font-fira-code-nerd-font"

@@ -66,12 +66,6 @@ p10k configure
 ./install.sh --verbose
 ```
 
-### Skip optional packages
-
-```bash
-./install.sh --skip-optional
-```
-
 ## Daily Usage
 
 ### Update everything
@@ -173,6 +167,70 @@ mise upgrade
    ```bash
    mise install
    ```
+
+### GitHub CLI Extension
+
+1. Edit `install.sh` and add to the `extensions` array in `install_gh_extensions()`:
+   ```bash
+   local extensions=(
+       "dlvhdr/gh-dash"
+       "owner/repo-name"  # Add new extension here
+   )
+   ```
+
+2. Run installer:
+   ```bash
+   ./install.sh
+   ```
+
+Or install manually:
+```bash
+gh extension install owner/repo-name
+```
+
+## GitHub CLI Extensions
+
+The following gh extensions are installed automatically:
+
+- **gh-dash**: Interactive dashboard for GitHub ([dlvhdr/gh-dash](https://github.com/dlvhdr/gh-dash))
+
+### Managing Extensions
+
+**List installed extensions:**
+```bash
+gh extension list
+```
+
+**Update extensions:**
+```bash
+gh extension upgrade --all
+# Or via topgrade (automatically included)
+topgrade
+```
+
+**Remove an extension:**
+```bash
+gh extension remove owner/repo-name
+```
+
+## Platform-Specific Tools
+
+### macOS Only
+
+- **LM Studio**: AI model runner (installed via Homebrew cask)
+  - GUI app: `/Applications/LM Studio.app`
+  - CLI available after first launch: `~/.lmstudio/bin/lms`
+
+### Arch Linux Only
+
+- (None currently)
+
+### Manual Installations
+
+**LM Studio (Arch Linux):**
+- Download from https://lmstudio.ai
+- Extract and run manually
+- Not available in AUR
 
 ## Project Structure
 
