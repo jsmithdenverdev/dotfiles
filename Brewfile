@@ -27,8 +27,10 @@ brew "gh"            # GitHub CLI
 # Databases
 brew "postgresql"    # Latest version
 
-# Docker
-cask "docker"
+# Docker (via colima instead of Docker Desktop)
+brew "docker"        # Docker CLI
+brew "docker-compose"
+brew "colima"        # Container runtime
 
 # Terminal Emulator
 cask "alacritty"
