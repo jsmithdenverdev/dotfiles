@@ -11,8 +11,8 @@ bun = "latest"       # Always latest Bun
 
 [env]
 # Environment variables
-EDITOR = "code"      # VSCode as default editor
-VISUAL = "code"
+EDITOR = "nvim"      # Neovim as default editor
+VISUAL = "code"      # VSCode as visual editor
 
 [tasks]
 # Custom tasks (can be run with: mise run <task>)

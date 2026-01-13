@@ -155,7 +155,7 @@ if command -v mise >/dev/null 2>&1; then
 fi
 
 # Editor
-export EDITOR="code"
+export EDITOR="nvim"
 export VISUAL="code"
 
 # Maintenance - update everything with one command
