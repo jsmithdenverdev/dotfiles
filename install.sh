@@ -19,6 +19,7 @@ LOG_FILE="$HOME/.dotfiles_install.log"
 # Flags
 DRY_RUN=false
 VERBOSE=false
+INTERACTIVE=true
 
 # Logging functions
 log() {
@@ -70,14 +71,16 @@ Usage: $(basename "$0") [OPTIONS]
 Install dotfiles dependencies for macOS or Arch Linux.
 
 OPTIONS:
-    -h, --help         Show this help message
-    -n, --dry-run      Show what would be installed without doing it
-    -v, --verbose      Show detailed output
+    -h, --help              Show this help message
+    -n, --dry-run           Show what would be installed without doing it
+    -v, --verbose           Show detailed output
+    --non-interactive       Disable interactive prompts (for CI/automation)
 
 EXAMPLES:
-    ./install.sh                  # Install all dependencies
-    ./install.sh --dry-run        # Preview installation
-    ./install.sh --verbose        # Detailed output
+    ./install.sh                     # Install all dependencies
+    ./install.sh --dry-run           # Preview installation
+    ./install.sh --verbose           # Detailed output
+    ./install.sh --non-interactive   # Run without prompts
 
 EOF
 }
@@ -98,6 +101,10 @@ while [[ $# -gt 0 ]]; do
             VERBOSE=true
             shift
             ;;
+        --non-interactive)
+            INTERACTIVE=false
+            shift
+            ;;
         *)
             print_color "${RED}Unknown option: $1${NC}"
             usage
@@ -114,6 +121,66 @@ detect_os() {
         echo "arch"
     else
         echo "unknown"
+    fi
+}
+
+# Bootstrap gum (install it first so we can use it)
+bootstrap_gum() {
+    # Check if gum is already installed
+    if command -v gum &>/dev/null; then
+        log "INFO" "gum already installed"
+        return 0
+    fi
+    
+    log "INFO" "Installing gum (TUI framework)..."
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY RUN] Would install gum"
+        return 0
+    fi
+    
+    local os
+    os=$(detect_os)
+    
+    case "$os" in
+        macos)
+            if command -v brew &>/dev/null; then
+                brew install gum
+                log "SUCCESS" "gum installed via Homebrew"
+            else
+                log "WARN" "Homebrew not available, skipping gum installation"
+                return 1
+            fi
+            ;;
+        arch)
+            if command -v yay &>/dev/null; then
+                yay -S --noconfirm gum
+                log "SUCCESS" "gum installed via yay"
+            elif command -v pacman &>/dev/null; then
+                sudo pacman -S --noconfirm gum
+                log "SUCCESS" "gum installed via pacman"
+            else
+                log "WARN" "No package manager available, skipping gum installation"
+                return 1
+            fi
+            ;;
+        *)
+            log "WARN" "Unsupported OS for gum installation"
+            return 1
+            ;;
+    esac
+}
+
+# Source UI library (after gum is installed)
+source_ui_lib() {
+    local ui_lib="$SCRIPT_DIR/lib/ui.sh"
+    
+    if [[ -f "$ui_lib" ]]; then
+        # shellcheck source=lib/ui.sh
+        source "$ui_lib"
+        log "INFO" "UI library loaded"
+    else
+        log "WARN" "UI library not found at $ui_lib"
     fi
 }
 
@@ -296,6 +363,12 @@ main() {
     
     local os_type
     os_type=$(detect_os)
+    
+    # Bootstrap gum first so we can use it for the rest of the script
+    bootstrap_gum
+    
+    # Source UI library (provides ui_* functions)
+    source_ui_lib
     
     case "$os_type" in
         macos)

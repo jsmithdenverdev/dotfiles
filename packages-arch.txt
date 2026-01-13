@@ -17,6 +17,9 @@ eza
 jq
 htop
 
+# TUI Tools
+gum
+
 # Databases
 postgresql
 

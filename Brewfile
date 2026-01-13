@@ -21,6 +21,9 @@ brew "htop"          # Process viewer
 brew "mise"          # Version manager for programming languages
 brew "gh"            # GitHub CLI
 
+# TUI Tools
+brew "gum"           # Shell scripting TUI primitives
+
 # Databases
 brew "postgresql"    # Latest version
 
