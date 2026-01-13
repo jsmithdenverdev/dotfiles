@@ -1,5 +1,6 @@
-# Arch Linux Official Repository Packages
+# Arch Linux Packages
 # Install with: yay -S --needed - < packages-arch.txt
+# Note: yay handles both official repos and AUR packages
 
 # Core System Tools
 git
@@ -17,11 +18,13 @@ eza
 jq
 htop
 
-# TUI Tools
-gum
+# Development Tools
+mise-bin          # AUR - Version manager
+github-cli        # GitHub CLI
 
-# Databases
-postgresql
+# Linting Tools
+shellcheck
+taplo-cli         # AUR - TOML linter
 
 # Docker (native on Linux - no colima needed)
 docker
@@ -33,6 +36,11 @@ alacritty
 # Editor
 code
 
-# Testing & Linting (for CI)
-shellcheck
-bats
+# Fonts
+ttf-firacode-nerd # AUR
+
+# Testing Tools
+bats              # Bash Automated Testing System
+
+# Maintenance
+topgrade          # AUR - Universal updater

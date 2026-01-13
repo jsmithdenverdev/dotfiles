@@ -259,32 +259,23 @@ install_arch_packages() {
     
     if [[ "$DRY_RUN" == "true" ]]; then
         log "INFO" "[DRY RUN] Would install packages from packages-arch.txt"
-        log "INFO" "[DRY RUN] Would install AUR packages from packages-aur.txt"
         return 0
     fi
     
     # Show package preview if interactive
     if declare -f ui_confirm &>/dev/null; then
-        if ! ui_confirm "Install packages from packages-arch.txt and packages-aur.txt?"; then
+        if ! ui_confirm "Install packages from packages-arch.txt?"; then
             log "WARN" "Package installation skipped by user"
             return 0
         fi
     fi
     
-    # Install official repo packages
-    log "INFO" "Installing official repository packages..."
+    # Install all packages (yay handles both official repos and AUR)
+    log "INFO" "Installing packages (official repos + AUR)..."
     if declare -f ui_spin &>/dev/null; then
-        ui_spin "Installing official packages..." yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
+        ui_spin "Installing packages..." yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
     else
         yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-arch.txt"
-    fi
-    
-    # Install AUR packages
-    log "INFO" "Installing AUR packages..."
-    if declare -f ui_spin &>/dev/null; then
-        ui_spin "Installing AUR packages..." yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-aur.txt"
-    else
-        yay -S --needed --noconfirm - < "$SCRIPT_DIR/packages-aur.txt"
     fi
     
     log "SUCCESS" "Arch Linux packages installed"
