@@ -55,7 +55,15 @@ print_color() {
 # Print banner
 banner() {
     echo ""
-    print_color "${BLUE}##  Dotfiles Installation Script  ##${NC}"
+    print_color "${BLUE}"
+    cat << 'EOF'
+    ____  ____  ____________________    _______ 
+   / __ \/ __ \/_  __/ ____/  _/ /   / ____/ ___|
+  / / / / / / / / / / /_   / // /   / __/  \__ \ 
+ / /_/ / /_/ / / / / __/ _/ // /___/ /___ ___/ / 
+/_____/\____/ /_/ /_/   /___/_____/_____//____/  
+EOF
+    print_color "${NC}"
     echo ""
 }
 
