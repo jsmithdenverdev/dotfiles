@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  lint-shell:
+    name: Lint Shell Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: '.'
+          severity: warning
+          format: gcc
+
+  lint-vim:
+    name: Lint VimScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install Vint
+        run: pip install vim-vint
+      
+      - name: Lint VimScript files
+        run: |
+          vint .vimrc || true
+          find .config -name "*.vim" -exec vint {} + || true
+        # Using '|| true' for warnings-only mode
+
+  lint-toml:
+    name: Validate TOML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install taplo
+        uses: taiki-e/install-action@v2
+        with:
+          tool: taplo-cli
+      
+      - name: Check TOML formatting
+        run: taplo fmt --check .config/**/*.toml
+
+  test:
+    name: Test Bootstrap Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install zsh
+        run: sudo apt-get update && sudo apt-get install -y zsh
+      
+      - name: Install Bats
+        run: sudo npm install -g bats
+      
+      - name: Run tests
+        run: bats test/
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ~/.dotfiles_bootstrap.log
