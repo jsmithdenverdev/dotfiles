@@ -10,27 +10,44 @@ This is a personal dotfiles repository containing shell configurations (zsh), ed
 
 ```
 .
+├── install.sh              # Main dependency installer (macOS + Arch)
 ├── bootstrap.zsh           # Symlink deployment script
+├── Brewfile                # macOS packages (Homebrew)
+├── packages-arch.txt       # Arch Linux packages (official repos)
+├── packages-aur.txt        # Arch Linux AUR packages
+├── .mise.toml              # Development tool versions (Node, Python, Go, etc.)
 ├── .dotfiles-config        # Bootstrap exclusion configuration
 ├── .zshrc                  # Zsh shell configuration
-├── .tmux.conf             # Tmux configuration
-├── .vimrc                 # Vim entry point (sources from .config/vim/)
+├── .tmux.conf              # Tmux configuration
+├── .vimrc                  # Vim entry point (sources from .config/vim/)
 ├── .config/
-│   ├── alacritty/         # Alacritty terminal config
-│   ├── nvim/              # Neovim configuration
-│   ├── vim/               # Vim plugins and settings
-│   │   ├── plugins.vim    # Vim plugin definitions (vim-plug)
-│   │   ├── base.vim       # Core editor settings
-│   │   ├── custom.vim     # Plugin-specific configurations
-│   │   └── mappings.vim   # Key mappings
-│   ├── starship.toml      # Starship prompt configuration
-│   └── Windsurf/          # Windsurf IDE settings
-└── backgrounds/           # Desktop backgrounds
+│   ├── alacritty/          # Alacritty terminal config
+│   ├── nvim/               # Neovim configuration
+│   ├── vim/                # Vim plugins and settings
+│   │   ├── plugins.vim     # Vim plugin definitions (vim-plug)
+│   │   ├── base.vim        # Core editor settings
+│   │   ├── custom.vim      # Plugin-specific configurations
+│   │   └── mappings.vim    # Key mappings
+│   └── starship.toml       # Starship prompt configuration
+├── backgrounds/            # Desktop backgrounds
+└── test/                   # Tests for bootstrap script
 ```
 
 ## Development Commands
 
-### Bootstrap & Installation
+### Installation
+```bash
+# Install all dependencies (system packages + dev tools)
+./install.sh
+
+# Preview installation without making changes
+./install.sh --dry-run
+
+# Verbose output
+./install.sh --verbose
+```
+
+### Bootstrap & Deployment
 ```bash
 # Deploy dotfiles (creates symlinks to $HOME)
 ./bootstrap.zsh
@@ -43,6 +60,15 @@ This is a personal dotfiles repository containing shell configurations (zsh), ed
 
 # Force overwrite existing files
 ./bootstrap.zsh --force
+```
+
+### Maintenance
+```bash
+# Update everything (Homebrew/yay, mise, vim plugins, etc.)
+topgrade
+
+# Or use mise task
+mise run update
 ```
 
 ### Shell Management
@@ -233,19 +259,15 @@ log "LEVEL" "message"  # Levels: INFO, WARN, ERROR, SUCCESS
 - Temp/swap files: `/tmp/`
 
 **PATH Additions (in .zshrc):**
-- Homebrew: `/opt/homebrew/bin`
+- Homebrew: `/opt/homebrew/bin` (macOS only)
 - Local binaries: `~/.local/bin`
-- Go binaries: `$(go env GOPATH)/bin`
-- Bun: `~/.bun/bin`
-- Deno: via `.deno/env`
-- Node: via NVM
+- mise: Automatically manages PATH for Node, Python, Go, Deno, Bun
 
 ## Environment Variables
 
 **Essential Variables:**
-- `EDITOR=nvim` - Default text editor
-- `DOCKER_HOST` - Colima Docker socket location
-- `NVM_DIR` - Node Version Manager directory
+- `EDITOR=code` - Default text editor (VSCode)
+- `VISUAL=code` - Visual editor
 - `ZSH` - Oh-My-Zsh installation path
 
 ## Testing & Validation
@@ -271,13 +293,118 @@ Based on repository history, use imperative mood and concise descriptions:
 
 Keep messages brief (1 line preferred) and action-oriented.
 
+## Dependency Management
+
+### Overview
+This repository uses a hybrid approach optimized for macOS and Arch Linux:
+- **System packages**: Brewfile (macOS) + packages-arch.txt/packages-aur.txt (Arch)
+- **Dev tools**: mise (.mise.toml) - cross-platform version manager
+- **Updates**: topgrade - universal updater
+
+### System Packages
+
+**macOS:**
+```bash
+# Required packages
+brew bundle --file=Brewfile
+
+# Generate Brewfile from current system
+brew bundle dump --file=Brewfile --force
+```
+
+**Arch Linux:**
+```bash
+# Official repository packages
+yay -S --needed - < packages-arch.txt
+
+# AUR packages
+yay -S --needed - < packages-aur.txt
+```
+
+### Development Tools
+
+Managed by mise (.mise.toml):
+```bash
+# Install all tools from .mise.toml
+mise install
+
+# Add a new tool
+mise use node@20
+
+# Check for updates
+mise outdated
+
+# Update all tools
+mise upgrade
+
+# List installed tools
+mise list
+```
+
+### Adding Dependencies
+
+1. **System tool**:
+   - macOS: Add to Brewfile
+   - Arch: Add to packages-arch.txt (official) or packages-aur.txt (AUR)
+   
+2. **Programming language/dev tool**: Add to .mise.toml
+   ```toml
+   [tools]
+   rust = "latest"
+   ```
+
+3. **GitHub CLI extension**: Edit install.sh
+   ```bash
+   local extensions=(
+       "dlvhdr/gh-dash"
+       "owner/repo-name"  # Add new extension
+   )
+   ```
+   
+4. **Test**: Run `./install.sh --dry-run`
+
+5. **Commit**: Update relevant files
+
+### GitHub CLI Extensions
+
+gh extensions are managed via `gh extension install` in the `install_gh_extensions()` function in `install.sh`.
+
+**Why use extensions instead of packages?**
+- gh extensions use `gh extension install` as the official method
+- Many extensions are not packaged separately in package managers
+- Extensions auto-update via `gh extension upgrade` (included in topgrade)
+- Keeps extension management consistent across macOS and Arch
+
+**Adding a new gh extension:**
+
+1. Edit `install.sh`
+2. Add to `extensions` array in `install_gh_extensions()`:
+   ```bash
+   local extensions=(
+       "dlvhdr/gh-dash"
+       "new/extension"
+   )
+   ```
+3. Run `./install.sh` or manually: `gh extension install new/extension`
+
+**Installed extensions:**
+- `dlvhdr/gh-dash` - Interactive GitHub dashboard
+
+### CI Dependencies
+
+CI uses system package managers for linting tools:
+- shellcheck, bats: via package manager
+- vim-vint: via pip
+- taplo: via package manager or mise
+
 ## Notes for Agents
 
-1. **Always use dry-run first:** When modifying bootstrap script or deployment logic, test with `--dry-run`
+1. **Always use dry-run first:** When modifying bootstrap or install scripts, test with `--dry-run`
 2. **Preserve user customizations:** Don't overwrite user-specific paths or settings
 3. **Maintain separation of concerns:** Keep plugins, base settings, custom configs, and mappings in separate vim files
 4. **Test changes locally:** Shell and vim configurations can break the user's environment if incorrect
 5. **Check for existing patterns:** Follow established conventions in the codebase (e.g., vim comment headers, logging format)
-6. **Be conservative with PATH:** Only add to PATH if absolutely necessary
+6. **Use mise for dev tools:** Node, Python, Go, Deno, Bun should be managed via mise, not manual PATH additions
 7. **Document complex logic:** Shell scripts and vim configurations can be cryptic; add comments
 8. **Respect the exclude list:** Don't commit files listed in `.dotfiles-config` or default excludes
+9. **Cross-platform support:** Test that changes work on both macOS and Arch Linux

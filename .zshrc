@@ -7,11 +7,15 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Homebrew
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Homebrew (macOS only)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 
 # Add deno completions to search path
-if [[ ":$FPATH:" != *":/Users/jake/completions:"* ]]; then export FPATH="/Users/jake/completions:$FPATH"; fi
+if [[ -d "$HOME/.deno/completions" ]] && [[ ":$FPATH:" != *":$HOME/.deno/completions:"* ]]; then
+    export FPATH="$HOME/.deno/completions:$FPATH"
+fi
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -108,34 +112,29 @@ source "$ZSH/oh-my-zsh.sh"
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export NVM_SYMLINK_CURRENT=true
+# NVM - DEPRECATED (now using mise for Node.js version management)
+# Keeping this commented for reference in case you need to switch back:
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+# export NVM_SYMLINK_CURRENT=true
 
 # PATH
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
 # bun completions
-[ -s "/Users/jake/.bun/_bun" ] && source "/Users/jake/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
-# Go
-export PATH=$PATH:/usr/local/go/bin
-if command -v go >/dev/null 2>&1; then
-    gopath=$(go env GOPATH)
-    export PATH=$PATH:$gopath/bin
-fi
+# Go - managed by mise
+# mise automatically sets GOROOT and GOPATH
+# Manual PATH additions no longer needed when using mise
 
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-. "/Users/jake/.deno/env"
-# Initialize zsh completions (added by deno install script)
+# Bun and Deno - managed by mise
+# mise automatically handles PATH for these tools
+# Initialize zsh completions
 autoload -Uz compinit
 compinit
-# Added by Windsurf
-export PATH="/Users/jake/.codeium/windsurf/bin:$PATH"
 
 # Colima docker host
 export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
@@ -146,15 +145,26 @@ export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 # shellcheck disable=SC1090
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# LM Studio CLI (lms)
+if [[ -d "$HOME/.lmstudio/bin" ]]; then
+    export PATH="$PATH:$HOME/.lmstudio/bin"
+fi
+
+
+# mise - version manager for programming languages
+# Handles Node, Python, Go, Deno, Bun, and more
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate zsh)"
+fi
+
+# Editor
+export EDITOR="nvim"
+export VISUAL="code"
+
+# Maintenance - update everything with one command
+alias update="topgrade"
+
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/Users/jake/.lmstudio/bin"
 # End of LM Studio CLI section
 
-
-export PATH="/Users/jake/.config/herd-lite/bin:$PATH"
-export PHP_INI_SCAN_DIR="/Users/jake/.config/herd-lite/bin:$PHP_INI_SCAN_DIR"
-
-
-
-# Editor
-export EDITOR="nvim"

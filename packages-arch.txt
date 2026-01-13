@@ -1,0 +1,35 @@
+# Arch Linux Official Repository Packages
+# Install with: yay -S --needed - < packages-arch.txt
+
+# Core System Tools
+git
+zsh
+neovim
+vim
+tmux
+
+# Modern CLI Utilities
+ripgrep
+fd
+fzf
+bat
+eza
+jq
+htop
+
+# Databases
+postgresql
+
+# Docker (native on Linux - no colima needed)
+docker
+docker-compose
+
+# Terminal Emulator
+alacritty
+
+# Editor
+code
+
+# Testing & Linting (for CI)
+shellcheck
+bats

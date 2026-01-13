@@ -1,0 +1,14 @@
+# Arch Linux AUR Packages
+# Install with: yay -S --needed - < packages-aur.txt
+
+# Version Manager
+mise-bin
+
+# Fonts
+ttf-firacode-nerd
+
+# Maintenance
+topgrade
+
+# TOML Linter
+taplo-cli
