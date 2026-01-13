@@ -5,8 +5,10 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Homebrew
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Homebrew (macOS only)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 
 # Add deno completions to search path
 if [[ ":$FPATH:" != *":/Users/jake/completions:"* ]]; then export FPATH="/Users/jake/completions:$FPATH"; fi
@@ -14,12 +16,13 @@ if [[ ":$FPATH:" != *":/Users/jake/completions:"* ]]; then export FPATH="/Users/
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH=(~/.oh-my-zsh)
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+# shellcheck disable=SC2034
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Set list of themes to pick from when loading at random
@@ -80,9 +83,11 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+# shellcheck disable=SC2034
 plugins=(git)
 
-source $ZSH/oh-my-zsh.sh
+# shellcheck disable=SC2128
+source "$ZSH/oh-my-zsh.sh"
 
 # User configuration
 
@@ -103,10 +108,12 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export NVM_SYMLINK_CURRENT=true
+# NVM - DEPRECATED (now using mise for Node.js version management)
+# Keeping this commented for reference in case you need to switch back:
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+# export NVM_SYMLINK_CURRENT=true
 
 # PATH
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
@@ -114,20 +121,16 @@ export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 # bun completions
 [ -s "/Users/jake/.bun/_bun" ] && source "/Users/jake/.bun/_bun"
 
-# Go
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$(go env GOPATH)/bin
+# Go - managed by mise
+# mise automatically sets GOROOT and GOPATH
+# Manual PATH additions no longer needed when using mise
 
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-. "/Users/jake/.deno/env"
-# Initialize zsh completions (added by deno install script)
+# Bun and Deno - managed by mise
+# mise automatically handles PATH for these tools
+# Initialize zsh completions
 autoload -Uz compinit
 compinit
-# Added by Windsurf
-export PATH="/Users/jake/.codeium/windsurf/bin:$PATH"
 
 # Colima docker host
 export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
@@ -142,10 +145,15 @@ export PATH="$PATH:/Users/jake/.lmstudio/bin"
 # End of LM Studio CLI section
 
 
-export PATH="/Users/jake/.config/herd-lite/bin:$PATH"
-export PHP_INI_SCAN_DIR="/Users/jake/.config/herd-lite/bin:$PHP_INI_SCAN_DIR"
-
-
+# mise - version manager for programming languages
+# Handles Node, Python, Go, Deno, Bun, and more
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate zsh)"
+fi
 
 # Editor
-export EDITOR="nvim"
+export EDITOR="code"
+export VISUAL="code"
+
+# Maintenance - update everything with one command
+alias update="topgrade"

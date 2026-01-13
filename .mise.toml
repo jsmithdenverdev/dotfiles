@@ -1,0 +1,22 @@
+# mise configuration - Cross-platform development tools
+# Install with: mise install
+
+[tools]
+# Programming Languages - use flexible versions for easier updates
+node = "lts"         # Latest LTS Node.js
+python = "3.12"      # Python 3.12.x (latest patch)
+go = "1.21"          # Go 1.21.x
+deno = "latest"      # Always latest Deno
+bun = "latest"       # Always latest Bun
+
+[env]
+# Environment variables
+EDITOR = "code"      # VSCode as default editor
+VISUAL = "code"
+
+[tasks]
+# Custom tasks (can be run with: mise run <task>)
+update = "topgrade"
+test = "bats test/"
+lint = "./scripts/lint.sh"
+deploy = "./bootstrap.zsh"
