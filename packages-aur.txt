@@ -12,3 +12,6 @@ topgrade
 
 # TOML Linter
 taplo-cli
+
+# GitHub Dashboard
+gh-dash

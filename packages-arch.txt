@@ -17,6 +17,9 @@ eza
 jq
 htop
 
+# GitHub CLI
+github-cli
+
 # Databases
 postgresql
 
