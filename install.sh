@@ -54,16 +54,12 @@ print_color() {
 
 # Print banner
 banner() {
-    echo ""
-    print_color "${BLUE}"
     cat << 'EOF'
 ▄ ▄▖▄▖▄▖▄▖▖ ▄▖▄▖
 ▌▌▌▌▐ ▙▖▐ ▌ ▙▖▚ 
 ▙▘▙▌▐ ▌ ▟▖▙▖▙▖▄▌
-                
 EOF
-    print_color "${NC}"
-    echo ""
+echo ""
 }
 
 # Usage information
