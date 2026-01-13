@@ -47,12 +47,17 @@ log() {
     esac
 }
 
+# Print with color support
+print_color() {
+    echo -e "$@"
+}
+
 # Print banner
 banner() {
     echo ""
-    echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║${NC}    Dotfiles Installation Script      ${BLUE}║${NC}"
-    echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
+    print_color "${BLUE}╔════════════════════════════════════════╗${NC}"
+    print_color "${BLUE}║${NC}    Dotfiles Installation Script      ${BLUE}║${NC}"
+    print_color "${BLUE}╔════════════════════════════════════════╗${NC}"
     echo ""
 }
 
@@ -93,7 +98,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            echo -e "${RED}Unknown option: $1${NC}"
+            print_color "${RED}Unknown option: $1${NC}"
             usage
             exit 1
             ;;
@@ -322,14 +327,14 @@ main() {
     echo ""
     log "SUCCESS" "Installation complete!"
     echo ""
-    echo -e "${GREEN}Next steps:${NC}"
-    echo "  1. Run ${BLUE}./bootstrap.zsh${NC} to deploy dotfiles"
-    echo "  2. Restart your terminal or run ${BLUE}source ~/.zshrc${NC}"
-    echo "  3. Configure powerlevel10k: ${BLUE}p10k configure${NC}"
+    print_color "${GREEN}Next steps:${NC}"
+    print_color "  1. Run ${BLUE}./bootstrap.zsh${NC} to deploy dotfiles"
+    print_color "  2. Restart your terminal or run ${BLUE}source ~/.zshrc${NC}"
+    print_color "  3. Configure powerlevel10k: ${BLUE}p10k configure${NC}"
     echo ""
-    echo -e "${YELLOW}Maintenance:${NC}"
-    echo "  • Update everything: ${BLUE}topgrade${NC}"
-    echo "  • Or use: ${BLUE}mise run update${NC}"
+    print_color "${YELLOW}Maintenance:${NC}"
+    print_color "  • Update everything: ${BLUE}topgrade${NC}"
+    print_color "  • Or use: ${BLUE}mise run update${NC}"
     echo ""
 }
 
