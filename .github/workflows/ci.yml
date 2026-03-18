@@ -64,6 +64,64 @@ jobs:
         run: |
           test -f "$HOME/.zshrc"
           test -f "$HOME/.config/nvim/init.vim"
+           test -f "$HOME/.config/vim/plugins.vim"
+           zsh -n "$HOME/.zshrc"
+
+  arch:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          pacman -Sy --noconfirm git curl zsh chezmoi
+
+      - name: Apply chezmoi to test home
+        env:
+          HOME: /tmp/chezmoi-home
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          rm -rf "$HOME"
+          mkdir -p "$HOME"
+          chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+
+      - name: Verify rendered files
+        env:
+          HOME: /tmp/chezmoi-home
+        run: |
+          test -f "$HOME/.zshrc"
+          test -f "$HOME/.config/nvim/init.vim"
+          test -f "$HOME/.config/vim/plugins.vim"
+          zsh -n "$HOME/.zshrc"
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install chezmoi
+
+      - name: Apply chezmoi to test home
+        env:
+          HOME: /tmp/chezmoi-home
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          rm -rf "$HOME"
+          mkdir -p "$HOME"
+          chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+
+      - name: Verify rendered files
+        env:
+          HOME: /tmp/chezmoi-home
+        run: |
+          test -f "$HOME/.zshrc"
+          test -f "$HOME/.config/nvim/init.vim"
           test -f "$HOME/.config/vim/plugins.vim"
           zsh -n "$HOME/.zshrc"
 
@@ -72,6 +130,8 @@ jobs:
     needs:
       - lint
       - fedora
+      - arch
+      - macos
     steps:
       - name: All checks passed
         run: echo "ci aggregation job"
