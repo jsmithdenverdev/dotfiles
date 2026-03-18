@@ -68,12 +68,13 @@ install_arch_packages() {
 install_fedora_packages() {
   log "Installing Fedora packages"
   run_as_root dnf clean all
-  mapfile -t packages < <(grep -v '^#' "$source_dir/packages-fedora.txt" | xargs -n1 echo)
-  if ((${#packages[@]} > 0)); then
-    if ! run_as_root dnf install -y --skip-unavailable "${packages[@]}"; then
-      log "Fedora package installation completed with warnings (missing packages were skipped)"
-    fi
+  mapfile -t packages < "$source_dir/packages-fedora.txt"
+  if ((${#packages[@]} == 0)); then
+    log "No Fedora packages requested, skipping"
+    return
   fi
+
+  run_as_root dnf install -y "${packages[@]}"
 }
 
 ensure_mise() {

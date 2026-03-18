@@ -1,4 +1,3 @@
-# Fedora packages installed via dnf. One per line, comments start with #.
 git
 zsh
 neovim
