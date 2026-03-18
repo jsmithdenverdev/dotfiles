@@ -4,3 +4,6 @@
 .gitignore
 README.md
 AGENTS.md
+Brewfile
+packages-arch.txt
+packages-fedora.txt

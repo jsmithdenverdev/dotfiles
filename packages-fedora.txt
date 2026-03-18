@@ -1,0 +1,27 @@
+# Fedora packages installed via dnf. One per line, comments start with #.
+git
+zsh
+neovim
+vim-enhanced
+tmux
+ripgrep
+fd-find
+fzf
+bat
+eza
+jq
+htop
+shellcheck
+taplo-cli
+docker
+docker-compose
+gh
+bats
+topgrade
+python3
+python3-pip
+nodejs
+npm
+go
+deno
+@development-tools
