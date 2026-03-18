@@ -92,7 +92,10 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(git)
 
 # shellcheck disable=SC2128
-source "$ZSH/oh-my-zsh.sh"
+if [[ -f "$ZSH/oh-my-zsh.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$ZSH/oh-my-zsh.sh"
+fi
 
 # User configuration
 
@@ -124,7 +127,10 @@ source "$ZSH/oh-my-zsh.sh"
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
 # bun completions
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+if [[ -s "$HOME/.bun/_bun" ]]; then
+  # shellcheck source=/dev/null
+  source "$HOME/.bun/_bun"
+fi
 
 # Go - managed by mise
 # mise automatically sets GOROOT and GOPATH
