@@ -147,3 +147,10 @@
 113. Encourage experimentation only inside throwaway shells, never the user’s main config without confirmation.
 114. Maintain readability by avoiding overly long paragraphs; short bullets win.
 115. This section intentionally reminds you to keep AGENTS.md authoritative.
+
+## BRANCH & CI POLICY
+116. `main` is protected—create feature branches (e.g., `feat/*`, `fix/*`) for every change and merge via pull requests only.
+117. Never force-push or commit directly to `main`; keep history linear by rebasing feature branches before opening a PR when necessary.
+118. `.github/workflows/ci.yml` defines mandatory jobs: `lint` (shell/Neovim syntax checks) and `fedora` (containerized chezmoi apply) with a final aggregating job named `ci`.
+119. The `ci` job depends on all other jobs and is the target of branch protection—do not rename or remove it without updating repository rules.
+120. When adding new CI coverage (extra OSes, lint steps), document the change here and ensure the new job is included in the `ci` job’s `needs` list.

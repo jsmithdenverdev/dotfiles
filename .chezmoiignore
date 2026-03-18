@@ -1,0 +1,6 @@
+# Files and directories that should never be applied to $HOME.
+.git/
+.github/
+.gitignore
+README.md
+AGENTS.md
