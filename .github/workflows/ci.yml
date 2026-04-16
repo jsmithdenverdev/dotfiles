@@ -38,35 +38,6 @@ jobs:
           cp dot_config/vim/*.vim "$ci_home/.config/vim/"
           HOME="$ci_home" XDG_CONFIG_HOME="$ci_home/.config" nvim --headless "+quit"
 
-  fedora:
-    runs-on: ubuntu-latest
-    container: fedora:latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          dnf install -y git curl zsh chezmoi
-
-      - name: Apply chezmoi to test home
-        env:
-          HOME: /tmp/chezmoi-home
-          WORKSPACE: ${{ github.workspace }}
-        run: |
-          rm -rf "$HOME"
-          mkdir -p "$HOME"
-          chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
-
-      - name: Verify rendered files
-        env:
-          HOME: /tmp/chezmoi-home
-        run: |
-          test -f "$HOME/.zshrc"
-          test -f "$HOME/.config/nvim/init.vim"
-           test -f "$HOME/.config/vim/plugins.vim"
-           zsh -n "$HOME/.zshrc"
-
   arch:
     runs-on: ubuntu-latest
     container: archlinux:latest
@@ -76,25 +47,39 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -Sy --noconfirm git curl zsh chezmoi
+          pacman -Sy --noconfirm git curl zsh chezmoi sudo
+
+      - name: Create builder user
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          if ! id -u builder >/dev/null 2>&1; then
+            useradd -m builder
+          fi
+          echo 'builder ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/builder
+          chmod 440 /etc/sudoers.d/builder
+          chown -R builder:builder "$WORKSPACE"
 
       - name: Apply chezmoi to test home
         env:
-          HOME: /tmp/chezmoi-home
           WORKSPACE: ${{ github.workspace }}
         run: |
+          sudo -u builder env HOME=/home/builder WORKSPACE="$WORKSPACE" bash -s <<'EOF'
+          set -euo pipefail
           rm -rf "$HOME"
           mkdir -p "$HOME"
           chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+          EOF
 
       - name: Verify rendered files
-        env:
-          HOME: /tmp/chezmoi-home
         run: |
+          sudo -u builder env HOME=/home/builder bash -s <<'EOF'
+          set -euo pipefail
           test -f "$HOME/.zshrc"
           test -f "$HOME/.config/nvim/init.vim"
           test -f "$HOME/.config/vim/plugins.vim"
           zsh -n "$HOME/.zshrc"
+          EOF
 
   macos:
     runs-on: macos-latest
@@ -109,17 +94,19 @@ jobs:
 
       - name: Apply chezmoi to test home
         env:
-          HOME: /tmp/chezmoi-home
           WORKSPACE: ${{ github.workspace }}
+          HOME_DIR: ${{ runner.temp }}/chezmoi-home
         run: |
+          HOME="$HOME_DIR"
           rm -rf "$HOME"
           mkdir -p "$HOME"
           chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
 
       - name: Verify rendered files
         env:
-          HOME: /tmp/chezmoi-home
+          HOME_DIR: ${{ runner.temp }}/chezmoi-home
         run: |
+          HOME="$HOME_DIR"
           test -f "$HOME/.zshrc"
           test -f "$HOME/.config/nvim/init.vim"
           test -f "$HOME/.config/vim/plugins.vim"
@@ -129,7 +116,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - lint
-      - fedora
       - arch
       - macos
     steps:

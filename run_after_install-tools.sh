@@ -65,18 +65,6 @@ install_arch_packages() {
   yay -S --needed --noconfirm - < "$source_dir/packages-arch.txt"
 }
 
-install_fedora_packages() {
-  log "Installing Fedora packages"
-  run_as_root dnf clean all
-  mapfile -t packages < "$source_dir/packages-fedora.txt"
-  if ((${#packages[@]} == 0)); then
-    log "No Fedora packages requested, skipping"
-    return
-  fi
-
-  run_as_root dnf install -y "${packages[@]}"
-}
-
 ensure_mise() {
   if command_exists mise; then
     return
@@ -109,6 +97,35 @@ run_gh_extensions() {
   done
 }
 
+install_oh_my_zsh() {
+  if [[ -d "$HOME/.oh-my-zsh" ]]; then
+    return
+  fi
+
+  log "Installing oh-my-zsh"
+  RUNZSH=no KEEP_ZSHRC=yes CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+}
+
+install_powerlevel10k() {
+  local theme_dir="$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+  if [[ -d "$theme_dir" ]]; then
+    return
+  fi
+
+  log "Installing Powerlevel10k theme"
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$theme_dir"
+}
+
+install_tpm() {
+  local tpm_dir="$HOME/.tmux/plugins/tpm"
+  if [[ -d "$tpm_dir" ]]; then
+    return
+  fi
+
+  log "Installing tmux plugin manager (TPM)"
+  git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+}
+
 main() {
   if [[ ${CHEZMOI_INSTALL_TOOLS:-1} -ne 1 ]]; then
     log "Skipping tool installation (CHEZMOI_INSTALL_TOOLS=$CHEZMOI_INSTALL_TOOLS)"
@@ -122,11 +139,9 @@ main() {
     . /etc/os-release
     case "$ID" in
       arch|endeavouros|manjaro) os="arch" ;;
-      fedora) os="fedora" ;;
       *)
         case "$ID_LIKE" in
           *arch*) os="arch" ;;
-          *fedora*|*rhel*) os="fedora" ;;
         esac
         ;;
     esac
@@ -139,9 +154,6 @@ main() {
     arch)
       install_arch_packages
       ;;
-    fedora)
-      install_fedora_packages
-      ;;
     *)
       log "Unsupported OS ($os), skipping package installation"
       ;;
@@ -150,6 +162,9 @@ main() {
   ensure_mise
   run_mise_install
   run_gh_extensions
+  install_oh_my_zsh
+  install_powerlevel10k
+  install_tpm
 }
 
 main

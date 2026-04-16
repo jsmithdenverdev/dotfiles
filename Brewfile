@@ -25,10 +25,8 @@ brew "gh"            # GitHub CLI
 brew "shellcheck"    # Shell script linter
 brew "taplo"         # TOML linter
 
-# Docker (via colima instead of Docker Desktop)
-brew "docker"        # Docker CLI
-brew "docker-compose"
-brew "colima"        # Container runtime
+# Docker (OrbStack provides engine, CLI, and Compose)
+cask "orbstack"
 
 # Terminal Emulator
 cask "alacritty"
