@@ -45,16 +45,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache pacman and yay
-        uses: actions/cache@v4
-        with:
-          path: |
-            /var/cache/pacman/pkg
-            /home/builder/.cache/yay
-          key: arch-cache-${{ runner.os }}-${{ hashFiles('packages-arch.txt', 'run_after_install-tools.sh') }}
-          restore-keys: |
-            arch-cache-${{ runner.os }}-
-
       - name: Install dependencies
         run: |
           pacman -Sy --noconfirm git curl zsh chezmoi sudo
@@ -68,7 +58,18 @@ jobs:
           fi
           echo 'builder ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/builder
           chmod 440 /etc/sudoers.d/builder
-          chown -R builder:builder "$WORKSPACE"
+          mkdir -p /home/builder/.cache/yay
+          chown -R builder:builder "$WORKSPACE" /home/builder/.cache
+
+      - name: Cache pacman and yay
+        uses: actions/cache@v4
+        with:
+          path: |
+            /var/cache/pacman/pkg
+            /home/builder/.cache/yay
+          key: arch-cache-${{ runner.os }}-${{ hashFiles('packages-arch.txt', 'run_after_install-tools.sh') }}
+          restore-keys: |
+            arch-cache-${{ runner.os }}-
 
       - name: Apply chezmoi to test home
         env:
