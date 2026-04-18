@@ -1,0 +1,9 @@
+# mise configuration - Cross-platform development tools
+# Install with: mise install
+
+[tools]
+# Programming Languages - use flexible versions for easier updates
+node = "lts"         # Latest LTS Node.js
+python = "3.12"      # Python 3.12.x (latest patch)
+go = "1.21"          # Go 1.21.x
+bun = "latest"       # Always latest Bun

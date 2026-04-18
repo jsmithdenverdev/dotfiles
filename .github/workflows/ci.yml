@@ -1,0 +1,154 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh shellcheck neovim
+
+      - name: zsh syntax check
+        run: zsh -n dot_zshrc
+
+      - name: shellcheck dot_zshrc
+        run: shellcheck -x dot_zshrc
+
+      - name: Validate Neovim configuration
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          ci_home="$WORKSPACE/.ci-home"
+          rm -rf "$ci_home"
+          mkdir -p "$ci_home/.config/nvim" "$ci_home/.config/vim"
+          cp dot_vimrc "$ci_home/.vimrc"
+          cp dot_config/nvim/init.vim "$ci_home/.config/nvim/init.vim"
+          cp dot_config/vim/*.vim "$ci_home/.config/vim/"
+          HOME="$ci_home" XDG_CONFIG_HOME="$ci_home/.config" nvim --headless "+quit"
+
+  arch:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          pacman -Sy --noconfirm git curl zsh chezmoi sudo
+
+      - name: Create builder user
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          if ! id -u builder >/dev/null 2>&1; then
+            useradd -m builder
+          fi
+          echo 'builder ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/builder
+          chmod 440 /etc/sudoers.d/builder
+          mkdir -p /home/builder/.cache/yay
+          chown -R builder:builder "$WORKSPACE" /home/builder/.cache
+
+      - name: Cache pacman and yay
+        uses: actions/cache@v4
+        with:
+          path: |
+            /var/cache/pacman/pkg
+            /home/builder/.cache/yay
+          key: arch-cache-${{ runner.os }}-${{ hashFiles('packages-arch.txt', 'run_after_install-tools.sh') }}
+          restore-keys: |
+            arch-cache-${{ runner.os }}-
+
+      - name: Apply chezmoi to test home
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          CHEZMOI_INSTALL_TOOLS: 1
+          HOME_DIR: /home/builder/chezmoi-home
+        run: |
+          sudo -u builder env HOME="$HOME_DIR" WORKSPACE="$WORKSPACE" bash -s <<'EOF'
+          set -euo pipefail
+          rm -rf "$HOME"
+          mkdir -p "$HOME"
+          HOME="$HOME" XDG_CONFIG_HOME="$HOME/.config" chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+          EOF
+
+      - name: Verify rendered files
+        env:
+          HOME_DIR: /home/builder/chezmoi-home
+        run: |
+          sudo -u builder env HOME="$HOME_DIR" bash -s <<'EOF'
+          set -euo pipefail
+          test -f "$HOME/.zshrc"
+          test -f "$HOME/.config/nvim/init.vim"
+          test -f "$HOME/.config/vim/plugins.vim"
+          zsh -n "$HOME/.zshrc"
+          test -d "$HOME/.oh-my-zsh"
+          test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+          test -d "$HOME/.tmux/plugins/tpm"
+          docker --version
+          docker-compose --version
+          EOF
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install chezmoi
+
+      - name: Apply chezmoi to test home
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          HOME_DIR: ${{ runner.temp }}/chezmoi-home
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          CHEZMOI_INSTALL_TOOLS: 1
+        run: |
+          HOME="$HOME_DIR"
+          rm -rf "$HOME"
+          mkdir -p "$HOME"
+          chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+
+      - name: Verify rendered files
+        env:
+          HOME_DIR: ${{ runner.temp }}/chezmoi-home
+        run: |
+          HOME="$HOME_DIR"
+          test -f "$HOME/.zshrc"
+          test -f "$HOME/.config/nvim/init.vim"
+          test -f "$HOME/.config/vim/plugins.vim"
+          zsh -n "$HOME/.zshrc"
+          test -d "$HOME/.oh-my-zsh"
+          test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+          test -d "$HOME/.tmux/plugins/tpm"
+          if command -v docker >/dev/null 2>&1; then
+            docker --version
+            docker compose version
+          else
+            echo "docker CLI not available on runner"
+          fi
+
+  ci:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - arch
+      - macos
+    steps:
+      - name: All checks passed
+        run: echo "ci aggregation job"

@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -12,10 +13,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-# Add deno completions to search path
-if [[ -d "$HOME/.deno/completions" ]] && [[ ":$FPATH:" != *":$HOME/.deno/completions:"* ]]; then
-    export FPATH="$HOME/.deno/completions:$FPATH"
-fi
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -90,7 +87,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # shellcheck disable=SC2034
 plugins=(git)
 
-# shellcheck disable=SC2128
+# shellcheck disable=SC2128,SC1091
 source "$ZSH/oh-my-zsh.sh"
 
 # User configuration
@@ -123,6 +120,7 @@ source "$ZSH/oh-my-zsh.sh"
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
 # bun completions
+# shellcheck disable=SC1091
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # Go - managed by mise
@@ -130,16 +128,11 @@ export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 # Manual PATH additions no longer needed when using mise
 
 
-# Bun and Deno - managed by mise
+# Bun - managed by mise
 # mise automatically handles PATH for these tools
 # Initialize zsh completions
 autoload -Uz compinit
 compinit
-
-# Colima docker host
-export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
-export DOCKER_SOCKET_LOCATION="$HOME/.colima/default/docker.sock"
-export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 # shellcheck disable=SC1090
@@ -147,7 +140,7 @@ export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 
 # LM Studio CLI (lms)
 if [[ -d "$HOME/.lmstudio/bin" ]]; then
-    export PATH="$PATH:$HOME/.lmstudio/bin"
+  export PATH="$PATH:$HOME/.lmstudio/bin"
 fi
 
 
@@ -163,7 +156,3 @@ export VISUAL="code --wait"
 
 # Maintenance - update everything with one command
 alias update="topgrade"
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/jake/.lmstudio/bin"
-# End of LM Studio CLI section

@@ -3,7 +3,7 @@
 1. The repository is a chezmoi-managed dotfiles tree located in the chezmoi source directory (`chezmoi source-path` shows it); every file mirrors something in `$HOME` (e.g., `dot_zshrc` -> `~/.zshrc`).
 2. Treat every tracked shell file as user-facing startup logic; prioritize vanilla zsh compatibility and gate bash-only extensions behind feature checks.
 3. Chezmoi is the source of truth; prefer `chezmoi edit <target>` or edit files here then run `chezmoi apply` to materialize.
-4. Author works on macOS with Homebrew, Colima Docker, Powerlevel10k, oh-my-zsh, mise, Bun, Deno, Go, and LM Studio CLI already wired in the shell startup.
+4. Author works on macOS with Homebrew, OrbStack (Docker engine/CLI/Compose), Powerlevel10k, oh-my-zsh, mise, Bun, Go, and LM Studio CLI already wired in the shell startup; Arch is the alternate target.
 5. If you add Cursor rules or Copilot instruction files, summarize their location and purpose in this document so future agents inherit the constraints.
 6. Keep everything ASCII unless the upstream file already relies on Unicode glyphs (current configs are ASCII only).
 7. Always run `git status` before and after edits; never stomp user changes that may live alongside your work.
@@ -19,7 +19,7 @@
 15. Use `chezmoi cd` if you need to drop into this repo from elsewhere; it opens this same directory.
 16. New dotfiles must respect chezmoi naming (`dot_<file>`, `dot_config/<path>`, etc.) and should be added with `chezmoi add` if created outside this tree.
 17. Do not commit secrets; chezmoi supports templates and encrypted data if needed, but none are currently present.
-18. Respect macOS-specific assumptions (Homebrew paths under `/opt/homebrew`, Colima sockets, LM Studio CLI additions).
+18. Respect macOS-specific assumptions (Homebrew paths under `/opt/homebrew`, OrbStack-provided Docker context/CLI, LM Studio CLI additions).
 19. When testing environment changes, open a new shell so .zshrc reloads cleanly.
 20. Use `topgrade` via the provided `update` alias if you need to validate the global maintenance command path.
 
@@ -31,7 +31,7 @@
 25. `chezmoi verify` can be used after deployments to ensure the live files match what the repo expects.
 26. To smoke-test startup, execute `ZDOTDIR=$(pwd) ZSH=$(echo ~/.oh-my-zsh) ENV=dev HOME=$HOME zsh --login -i` from inside the repo to force-load the edited file.
 27. To test Powerlevel10k-specific sections, source `~/.p10k.zsh` manually after verifying the file exists, because chezmoi does not track it.
-28. For completions (bun, deno), run their respective completion commands (`bun completions`, `deno completions`) before wiring new paths, then restart the shell.
+28. For completions (bun), run its completion command (`bun completions`) before wiring new paths, then restart the shell.
 29. Always test alias additions by invoking them directly in a new shell to catch quoting mistakes early.
 30. Record any new test commands you introduce inside this document so agents know how to reproduce them.
 
@@ -94,8 +94,8 @@
 76. PATH mutations should add `$HOME/.local/bin`, `$HOME/.local/go/bin`, and `$HOME/.lmstudio/bin` only once; de-duplicate before exporting.
 77. Keep Homebrew paths via `eval "$$(/opt/homebrew/bin/brew shellenv)"` near the top so later PATH edits see brew binaries.
 78. Mise already injects shims; avoid re-adding its bin directories unless troubleshooting.
-79. Bun and Deno completions rely on `$HOME/.bun/_bun` and `$HOME/.deno/completions`; wrap sourcing in existence checks to avoid warnings.
-80. Colima Docker exports (`DOCKER_HOST`, `DOCKER_SOCKET_LOCATION`) should stay together so future changes remain discoverable.
+79. Bun completions rely on `$HOME/.bun/_bun`; wrap sourcing in existence checks to avoid warnings.
+80. OrbStack provides the Docker engine, CLI, and Compose on macOS—do not brew-install docker/compose there; Arch uses the packaged docker/docker-compose pair.
 81. Powerlevel10k instant prompt block must stay at the very top to avoid prompt flicker.
 82. Keep `ZSH_THEME` and `plugins` definitions above the `source "$ZSH/oh-my-zsh.sh"` line so oh-my-zsh reads the configuration.
 83. Editor defaults (`EDITOR`, `VISUAL`) belong toward the bottom, after PATH finalization, so they inherit any environment tweaks.
@@ -147,3 +147,19 @@
 113. Encourage experimentation only inside throwaway shells, never the user’s main config without confirmation.
 114. Maintain readability by avoiding overly long paragraphs; short bullets win.
 115. This section intentionally reminds you to keep AGENTS.md authoritative.
+
+## BRANCH & CI POLICY
+116. `main` is protected—create feature branches (e.g., `feat/*`, `fix/*`) for every change and merge via pull requests only.
+117. Never force-push or commit directly to `main`; keep history linear by rebasing feature branches before opening a PR when necessary.
+118. `.github/workflows/ci.yml` defines mandatory jobs: `lint` (shell/Neovim syntax checks), `arch`, and `macos`, with a final aggregating job named `ci`.
+119. The `ci` job depends on all other jobs and is the target of branch protection—do not rename or remove it without updating repository rules.
+120. The arch and macos jobs run `chezmoi apply --force` with `CHEZMOI_INSTALL_TOOLS=1` to exercise package installs (yay/brew bundle, OrbStack cask) plus oh-my-zsh/Powerlevel10k/TPM bootstraps and Docker/Compose checks.
+121. When adding new CI coverage (extra OSes, lint steps), document the change here and ensure the new job is included in the `ci` job’s `needs` list.
+
+## AUTOMATED TOOL INSTALLS
+121. `run_after_install-tools.sh` executes on every `chezmoi apply` and installs platform packages plus `mise` toolchains; keep it idempotent.
+122. Package manifests live at the repo root (`Brewfile`, `packages-arch.txt`); update them to add/remove dependencies and keep comments concise.
+123. The script detects macOS (brew bundle) and Arch (yay + package list). Extend it if you add new OS support.
+124. The installer also bootstraps oh-my-zsh, Powerlevel10k, and tmux TPM when missing; keep those paths consistent with `.zshrc`/`.tmux.conf` expectations.
+125. Guard long installs by setting `CHEZMOI_INSTALL_TOOLS=0` when you want to skip them (e.g., ad-hoc testing); document permanent skips in AGENTS first.
+126. `.mise.toml` is tracked as `dot_mise.toml`; run `mise install` or `mise apply` whenever tool versions change and commit the updated file.

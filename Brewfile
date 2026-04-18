@@ -1,0 +1,47 @@
+# Dotfiles Brewfile - macOS Dependencies
+# Install with: brew bundle --file=Brewfile
+
+# Core System Tools
+brew "git"
+brew "zsh"
+brew "neovim"
+brew "vim"
+brew "tmux"
+
+# Modern CLI Utilities
+brew "ripgrep"       # Fast grep replacement
+brew "fd"            # Fast find replacement
+brew "fzf"           # Fuzzy finder
+brew "bat"           # Cat with syntax highlighting
+brew "eza"           # Modern ls replacement
+brew "jq"            # JSON processor
+brew "htop"          # Process viewer
+
+# Development Tools
+brew "mise"          # Version manager for programming languages
+brew "gh"            # GitHub CLI
+
+# Linting Tools
+brew "shellcheck"    # Shell script linter
+brew "taplo"         # TOML linter
+
+# Docker (OrbStack provides engine, CLI, and Compose)
+cask "orbstack"
+
+# Terminal Emulator
+cask "alacritty"
+
+# Editor
+cask "visual-studio-code"
+
+# AI Tools
+cask "lm-studio"     # AI model runner
+
+# Fonts
+cask "font-fira-code-nerd-font"
+
+# Testing Tools
+brew "bats-core"     # Bash Automated Testing System
+
+# Maintenance
+brew "topgrade"      # Universal updater
