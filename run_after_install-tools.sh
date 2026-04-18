@@ -75,7 +75,11 @@ install_arch_packages() {
     --norebuild
   )
   log "Installing Arch packages"
-  yay "${yay_flags[@]}" -S --needed - < "$source_dir/packages-arch.txt"
+  if command_exists script; then
+    script -qec "yay ${yay_flags[*]} -S --needed - < '$source_dir/packages-arch.txt'" /dev/null
+  else
+    yay "${yay_flags[@]}" -S --needed - < "$source_dir/packages-arch.txt"
+  fi
 }
 
 ensure_mise() {
