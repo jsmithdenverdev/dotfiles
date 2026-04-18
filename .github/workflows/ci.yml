@@ -64,17 +64,20 @@ jobs:
         env:
           WORKSPACE: ${{ github.workspace }}
           CHEZMOI_INSTALL_TOOLS: 1
+          HOME_DIR: /home/builder/chezmoi-home
         run: |
-          sudo -u builder env HOME=/home/builder WORKSPACE="$WORKSPACE" bash -s <<'EOF'
+          sudo -u builder env HOME="$HOME_DIR" WORKSPACE="$WORKSPACE" bash -s <<'EOF'
           set -euo pipefail
           rm -rf "$HOME"
           mkdir -p "$HOME"
-          chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+          HOME="$HOME" XDG_CONFIG_HOME="$HOME/.config" chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
           EOF
 
       - name: Verify rendered files
+        env:
+          HOME_DIR: /home/builder/chezmoi-home
         run: |
-          sudo -u builder env HOME=/home/builder bash -s <<'EOF'
+          sudo -u builder env HOME="$HOME_DIR" bash -s <<'EOF'
           set -euo pipefail
           test -f "$HOME/.zshrc"
           test -f "$HOME/.config/nvim/init.vim"
