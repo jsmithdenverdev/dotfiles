@@ -94,6 +94,9 @@ ensure_mise() {
 
 run_mise_install() {
   ensure_path_entry "$HOME/.local/bin"
+  if [[ -f "$HOME/.mise.toml" ]]; then
+    export MISE_TRUSTED_CONFIG_PATHS="${MISE_TRUSTED_CONFIG_PATHS:+$MISE_TRUSTED_CONFIG_PATHS:}$HOME/.mise.toml"
+  fi
   export MISE_PYTHON_GITHUB_ATTESTATIONS=${MISE_PYTHON_GITHUB_ATTESTATIONS:-false}
   if ! command_exists mise; then
     log "mise not found even after installation"
