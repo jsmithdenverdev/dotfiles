@@ -94,6 +94,7 @@ ensure_mise() {
 
 run_mise_install() {
   ensure_path_entry "$HOME/.local/bin"
+  export MISE_PYTHON_GITHUB_ATTESTATIONS=${MISE_PYTHON_GITHUB_ATTESTATIONS:-false}
   if ! command_exists mise; then
     log "mise not found even after installation"
     return
