@@ -61,9 +61,6 @@ set autoindent
 " Turn on line numbers
 set number
 
-" Turn on active line highlight
-set cursorline
-
 " Display cursor position
 set ruler
 

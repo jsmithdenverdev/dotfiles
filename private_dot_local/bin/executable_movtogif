@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Trigger macOS file picker filtered for mp4 files
+INPUT_FILE=$(osascript -e 'POSIX path of (choose file with prompt "Select an MP4 to convert:" of type {"public.mpeg-4"})' 2>/dev/null)
+
+# Exit if the user cancels the picker
+if [ -z "$INPUT_FILE" ]; then
+    echo "No file selected. Exiting."
+    exit 1
+fi
+
+# Define the output path (replaces .mp4 extension with .gif)
+OUTPUT_FILE="${INPUT_FILE%.*}.gif"
+
+echo "Converting: $INPUT_FILE"
+echo "To: $OUTPUT_FILE"
+
+# Execute high-quality FFmpeg conversion
+ffmpeg -i "$INPUT_FILE" -vf "fps=15,scale=720:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" "$OUTPUT_FILE" -y
+
+echo "Done! GIF saved to current directory."

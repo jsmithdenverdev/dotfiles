@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# --- Configuration ---
+MAX_NAME_LEN=20
+
+# --- Helper Functions ---
+
+die() {
+    printf "Error: %s\n" "$1" >&2
+    exit 1
+}
+
+check_dep() {
+    command -v "$1" >/dev/null 2>&1 || die "Tool '$1' is not installed."
+}
+
+# --- Argument Parsing ---
+
+KILL_MODE=false
+TARGET_DIR="."
+
+# Simple parser for flags and paths
+for arg in "$@"; do
+    case $arg in
+        -k|--kill)
+            KILL_MODE=true
+            shift
+            ;;
+        *)
+            TARGET_DIR="$arg"
+            ;;
+    esac
+done
+
+# --- Initialization ---
+
+check_dep "opencode"
+check_dep "yazi"
+check_dep "lazygit"
+
+TARGET_DIR=$(realpath "$TARGET_DIR")
+[[ ! -d "$TARGET_DIR" ]] && die "'$TARGET_DIR' is not a directory."
+
+# Sanitize & Truncate Session Name
+# 1. Get basename 2. Replace dots/colons 3. Truncate to MAX_NAME_LEN
+RAW_NAME=$(basename "$TARGET_DIR" | tr '.: ' '_')
+SESSION_NAME="${RAW_NAME:0:$MAX_NAME_LEN}"
+
+# --- Kill Switch Logic ---
+
+if [ "$KILL_MODE" = true ]; then
+    if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+        tmux kill-session -t "$SESSION_NAME"
+        echo "Session '$SESSION_NAME' killed."
+        exit 0
+    else
+        die "No session named '$SESSION_NAME' found to kill."
+    fi
+fi
+
+# --- Session Logic ---
+
+if [[ -z "$TMUX" ]]; then
+    # OUTSIDE TMUX: Create or Attach
+    if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+        echo "Session '$SESSION_NAME' exists. Attaching..."
+        exec tmux attach-session -t "$SESSION_NAME"
+    else
+        # Start detached session
+        tmux new-session -d -s "$SESSION_NAME" -n "opencode" -c "$TARGET_DIR"
+        
+        # Setup windows
+        tmux send-keys -t "$SESSION_NAME:opencode" "opencode" C-m
+        tmux new-window  -t "$SESSION_NAME" -n "yazi" -c "$TARGET_DIR" "yazi"
+        tmux new-window  -t "$SESSION_NAME" -n "lazygit" -c "$TARGET_DIR" "lazygit"
+        
+        # Select first window and attach
+        tmux select-window -t "$SESSION_NAME:opencode"
+        exec tmux attach-session -t "$SESSION_NAME"
+    fi
+else
+    # INSIDE TMUX: Just create windows in current session
+    cd "$TARGET_DIR" || exit 1
+    
+    # Rename current window to opencode if it's just a shell
+    tmux rename-window "opencode"
+    tmux send-keys "opencode" C-m
+    
+    tmux new-window -n "yazi" -c "$TARGET_DIR" "yazi"
+    tmux new-window -n "lazygit" -c "$TARGET_DIR" "lazygit"
+    
+    tmux select-window -t "opencode"
+fi

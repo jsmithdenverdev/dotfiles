@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ -n "$TMUX" ]; then
+  # Open nvim in a floating tmux popup, wait for it to close
+  tmux popup -E -w 90% -h 90% "nvim $@"
+else
+  # Fallback if not in tmux (or use nvim directly and hope for the best)
+  nvim "$@"
+fi
