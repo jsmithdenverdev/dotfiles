@@ -135,8 +135,12 @@ jobs:
           test -d "$HOME/.oh-my-zsh"
           test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
           test -d "$HOME/.tmux/plugins/tpm"
-          docker --version
-          docker compose version
+          if command -v docker >/dev/null 2>&1; then
+            docker --version
+            docker compose version
+          else
+            echo "docker CLI not available on runner"
+          fi
 
   ci:
     runs-on: ubuntu-latest
