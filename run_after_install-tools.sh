@@ -73,7 +73,6 @@ install_arch_packages() {
     --cleanafter
     --noredownload
     --norebuild
-    --nocleanmenu
   )
   log "Installing Arch packages"
   yay "${yay_flags[@]}" -S --needed - < "$source_dir/packages-arch.txt"
