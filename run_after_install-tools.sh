@@ -61,8 +61,22 @@ ensure_yay() {
 
 install_arch_packages() {
   ensure_yay
+  yay_flags=(
+    --noconfirm
+    --sudoloop
+    --noprogressbar
+    --answerdiff
+    None
+    --answerclean
+    All
+    --removemake
+    --cleanafter
+    --noredownload
+    --norebuild
+    --nocleanmenu
+  )
   log "Installing Arch packages"
-  yay -S --needed --noconfirm - < "$source_dir/packages-arch.txt"
+  yay "${yay_flags[@]}" -S --needed - < "$source_dir/packages-arch.txt"
 }
 
 ensure_mise() {
