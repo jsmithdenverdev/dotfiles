@@ -63,6 +63,7 @@ jobs:
       - name: Apply chezmoi to test home
         env:
           WORKSPACE: ${{ github.workspace }}
+          CHEZMOI_INSTALL_TOOLS: 1
         run: |
           sudo -u builder env HOME=/home/builder WORKSPACE="$WORKSPACE" bash -s <<'EOF'
           set -euo pipefail
@@ -79,6 +80,11 @@ jobs:
           test -f "$HOME/.config/nvim/init.vim"
           test -f "$HOME/.config/vim/plugins.vim"
           zsh -n "$HOME/.zshrc"
+          test -d "$HOME/.oh-my-zsh"
+          test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+          test -d "$HOME/.tmux/plugins/tpm"
+          docker --version
+          docker-compose --version
           EOF
 
   macos:
@@ -96,6 +102,8 @@ jobs:
         env:
           WORKSPACE: ${{ github.workspace }}
           HOME_DIR: ${{ runner.temp }}/chezmoi-home
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          CHEZMOI_INSTALL_TOOLS: 1
         run: |
           HOME="$HOME_DIR"
           rm -rf "$HOME"
@@ -111,6 +119,11 @@ jobs:
           test -f "$HOME/.config/nvim/init.vim"
           test -f "$HOME/.config/vim/plugins.vim"
           zsh -n "$HOME/.zshrc"
+          test -d "$HOME/.oh-my-zsh"
+          test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+          test -d "$HOME/.tmux/plugins/tpm"
+          docker --version
+          docker compose version
 
   ci:
     runs-on: ubuntu-latest
