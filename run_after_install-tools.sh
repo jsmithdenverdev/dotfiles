@@ -82,6 +82,36 @@ install_arch_packages() {
   fi
 }
 
+add_vscode_repo() {
+  if [[ -f /etc/yum.repos.d/vscode.repo ]]; then
+    return
+  fi
+
+  log "Adding VS Code repository"
+  run_as_root rpm --import https://packages.microsoft.com/keys/microsoft.asc
+  run_as_root bash -c 'cat > /etc/yum.repos.d/vscode.repo <<"EOF"
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+EOF'
+}
+
+install_fedora_packages() {
+  if ! command_exists dnf; then
+    log "dnf not found; skipping Fedora package installation"
+    return
+  fi
+
+  add_vscode_repo
+  mapfile -t fedora_packages < "$source_dir/packages-fedora.txt"
+  log "Installing Fedora packages"
+  run_as_root dnf -y install dnf-plugins-core
+  run_as_root dnf -y install "${fedora_packages[@]}"
+}
+
 ensure_mise() {
   if command_exists mise; then
     return
@@ -160,9 +190,12 @@ main() {
     . /etc/os-release
     case "$ID" in
       arch|endeavouros|manjaro) os="arch" ;;
+      fedora) os="fedora" ;;
+      rhel|centos|rocky|almalinux) os="fedora" ;;
       *)
         case "$ID_LIKE" in
           *arch*) os="arch" ;;
+          *fedora*|*rhel*) os="fedora" ;;
         esac
         ;;
     esac
@@ -174,6 +207,9 @@ main() {
       ;;
     arch)
       install_arch_packages
+      ;;
+    fedora)
+      install_fedora_packages
       ;;
     *)
       log "Unsupported OS ($os), skipping package installation"

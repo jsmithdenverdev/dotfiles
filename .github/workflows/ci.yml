@@ -101,6 +101,66 @@ jobs:
           docker-compose --version
           EOF
 
+  fedora:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          dnf -y install git curl zsh chezmoi sudo
+
+      - name: Create builder user
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          if ! id -u builder >/dev/null 2>&1; then
+            useradd -m builder
+          fi
+          echo 'builder ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/builder
+          chmod 440 /etc/sudoers.d/builder
+          chown -R builder:builder "$WORKSPACE"
+
+      - name: Cache dnf
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/dnf
+          key: fedora-cache-${{ runner.os }}-${{ hashFiles('packages-fedora.txt', 'run_after_install-tools.sh') }}
+          restore-keys: |
+            fedora-cache-${{ runner.os }}-
+
+      - name: Apply chezmoi to test home
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          CHEZMOI_INSTALL_TOOLS: 1
+          HOME_DIR: /home/builder/chezmoi-home
+        run: |
+          sudo -u builder env HOME="$HOME_DIR" WORKSPACE="$WORKSPACE" bash -s <<'EOF'
+          set -euo pipefail
+          rm -rf "$HOME"
+          mkdir -p "$HOME"
+          HOME="$HOME" XDG_CONFIG_HOME="$HOME/.config" chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+          EOF
+
+      - name: Verify rendered files
+        env:
+          HOME_DIR: /home/builder/chezmoi-home
+        run: |
+          sudo -u builder env HOME="$HOME_DIR" bash -s <<'EOF'
+          set -euo pipefail
+          test -f "$HOME/.zshrc"
+          test -f "$HOME/.config/nvim/init.vim"
+          test -f "$HOME/.config/vim/plugins.vim"
+          zsh -n "$HOME/.zshrc"
+          test -d "$HOME/.oh-my-zsh"
+          test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+          test -d "$HOME/.tmux/plugins/tpm"
+          docker --version
+          docker-compose --version
+          EOF
+
   macos:
     runs-on: macos-latest
     steps:
@@ -148,6 +208,7 @@ jobs:
     needs:
       - lint
       - arch
+      - fedora
       - macos
     steps:
       - name: All checks passed

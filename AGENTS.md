@@ -154,12 +154,13 @@
 118. `.github/workflows/ci.yml` defines mandatory jobs: `lint` (shell/Neovim syntax checks), `arch`, and `macos`, with a final aggregating job named `ci`.
 119. The `ci` job depends on all other jobs and is the target of branch protection—do not rename or remove it without updating repository rules.
 120. The arch and macos jobs run `chezmoi apply --force` with `CHEZMOI_INSTALL_TOOLS=1` to exercise package installs (yay/brew bundle, OrbStack cask) plus oh-my-zsh/Powerlevel10k/TPM bootstraps and Docker/Compose checks.
-121. When adding new CI coverage (extra OSes, lint steps), document the change here and ensure the new job is included in the `ci` job’s `needs` list.
+121. Fedora CI uses `fedora:latest` with dnf cache keyed to `packages-fedora.txt` and `run_after_install-tools.sh`, installs via `chezmoi apply --force` as a builder user, and verifies docker/docker-compose binaries.
+122. When adding new CI coverage (extra OSes, lint steps), document the change here and ensure the new job is included in the `ci` job’s `needs` list.
 
 ## AUTOMATED TOOL INSTALLS
-121. `run_after_install-tools.sh` executes on every `chezmoi apply` and installs platform packages plus `mise` toolchains; keep it idempotent.
-122. Package manifests live at the repo root (`Brewfile`, `packages-arch.txt`); update them to add/remove dependencies and keep comments concise.
-123. The script detects macOS (brew bundle) and Arch (yay + package list). Extend it if you add new OS support.
+123. `run_after_install-tools.sh` executes on every `chezmoi apply` and installs platform packages plus `mise` toolchains; keep it idempotent.
+124. Package manifests live at the repo root (`Brewfile`, `packages-arch.txt`); update them to add/remove dependencies and keep comments concise.
+125. The script detects macOS (brew bundle), Arch (yay + package list), and Fedora/RHEL-like distros (dnf + VS Code repo) to install from the corresponding manifest.
 124. The installer also bootstraps oh-my-zsh, Powerlevel10k, and tmux TPM when missing; keep those paths consistent with `.zshrc`/`.tmux.conf` expectations.
 125. Guard long installs by setting `CHEZMOI_INSTALL_TOOLS=0` when you want to skip them (e.g., ad-hoc testing); document permanent skips in AGENTS first.
 126. `.mise.toml` is tracked as `dot_mise.toml`; run `mise install` or `mise apply` whenever tool versions change and commit the updated file.
