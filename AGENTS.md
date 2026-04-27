@@ -153,7 +153,7 @@
 117. Never force-push or commit directly to `main`; keep history linear by rebasing feature branches before opening a PR when necessary.
 118. `.github/workflows/ci.yml` defines mandatory jobs: `lint` (shell/Neovim syntax checks), `arch`, `ubuntu`, and `macos`, with a final aggregating job named `ci`.
 119. The `ci` job depends on all other jobs and is the target of branch protection—do not rename or remove it without updating repository rules.
-120. The arch, ubuntu, and macos jobs run `chezmoi apply --force` with `CHEZMOI_INSTALL_TOOLS=1` to exercise package installs (yay/apt/brew bundles plus OrbStack cask) along with oh-my-zsh/Powerlevel10k/TPM bootstraps and Docker/Compose checks.
+120. The arch and ubuntu jobs run inside clean containers (`archlinux:latest`, `ubuntu:24.04`) as a non-root `builder` user, while the macos job runs on the hosted runner; all three run `chezmoi apply --force` with `CHEZMOI_INSTALL_TOOLS=1` to exercise package installs (yay/apt/brew bundles plus OrbStack cask) along with oh-my-zsh/Powerlevel10k/TPM bootstraps and Docker/Compose checks.
 121. When adding new CI coverage (extra OSes, lint steps), document the change here and ensure the new job is included in the `ci` job’s `needs` list.
 
 ## AUTOMATED TOOL INSTALLS
