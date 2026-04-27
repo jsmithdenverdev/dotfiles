@@ -161,6 +161,28 @@ install_ubuntu_packages() {
   fi
 
   if (( ${#packages[@]} )); then
+    local filtered_packages=()
+    for pkg in "${packages[@]}"; do
+      case "$pkg" in
+        docker.io)
+          if command -v docker >/dev/null 2>&1; then
+            log "docker present; skipping docker.io"
+            continue
+          fi
+          ;;
+        docker-compose)
+          if command -v docker-compose >/dev/null 2>&1 || (command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1); then
+            log "docker compose available; skipping docker-compose"
+            continue
+          fi
+          ;;
+      esac
+      filtered_packages+=("$pkg")
+    done
+    packages=("${filtered_packages[@]}")
+  fi
+
+  if (( ${#packages[@]} )); then
     run_as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
   fi
 
