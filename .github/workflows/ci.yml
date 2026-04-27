@@ -110,7 +110,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y chezmoi zsh
+          sudo apt-get install -y zsh curl
+          sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
 
       - name: Apply chezmoi to test home
         env:
