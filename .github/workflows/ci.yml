@@ -101,6 +101,62 @@ jobs:
           docker-compose --version
           EOF
 
+  ubuntu:
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install prerequisites
+        run: |
+          apt-get update
+          apt-get install -y sudo curl git zsh ca-certificates gnupg
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
+
+      - name: Create builder user
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          if ! id -u builder >/dev/null 2>&1; then
+            useradd -m builder
+          fi
+          echo 'builder ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/builder
+          chmod 440 /etc/sudoers.d/builder
+          mkdir -p /home/builder/.config
+          chown -R builder:builder "$WORKSPACE" /home/builder
+
+      - name: Apply chezmoi to test home
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          HOME_DIR: /home/builder/chezmoi-home
+          CHEZMOI_INSTALL_TOOLS: 1
+        run: |
+          sudo -u builder env HOME="$HOME_DIR" WORKSPACE="$WORKSPACE" bash -s <<'EOF'
+          set -euo pipefail
+          rm -rf "$HOME"
+          mkdir -p "$HOME"
+          HOME="$HOME" XDG_CONFIG_HOME="$HOME/.config" chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+          EOF
+
+      - name: Verify rendered files
+        env:
+          HOME_DIR: /home/builder/chezmoi-home
+        run: |
+          sudo -u builder env HOME="$HOME_DIR" bash -s <<'EOF'
+          set -euo pipefail
+          test -f "$HOME/.zshrc"
+          test -f "$HOME/.config/nvim/init.vim"
+          test -f "$HOME/.config/vim/plugins.vim"
+          zsh -n "$HOME/.zshrc"
+          test -d "$HOME/.oh-my-zsh"
+          test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+          test -d "$HOME/.tmux/plugins/tpm"
+          docker --version
+          docker-compose --version
+          gh --version
+          EOF
+
   macos:
     runs-on: macos-latest
     steps:
@@ -148,6 +204,7 @@ jobs:
     needs:
       - lint
       - arch
+      - ubuntu
       - macos
     steps:
       - name: All checks passed

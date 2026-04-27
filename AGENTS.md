@@ -3,7 +3,7 @@
 1. The repository is a chezmoi-managed dotfiles tree located in the chezmoi source directory (`chezmoi source-path` shows it); every file mirrors something in `$HOME` (e.g., `dot_zshrc` -> `~/.zshrc`).
 2. Treat every tracked shell file as user-facing startup logic; prioritize vanilla zsh compatibility and gate bash-only extensions behind feature checks.
 3. Chezmoi is the source of truth; prefer `chezmoi edit <target>` or edit files here then run `chezmoi apply` to materialize.
-4. Author works on macOS with Homebrew, OrbStack (Docker engine/CLI/Compose), Powerlevel10k, oh-my-zsh, mise, Bun, Go, and LM Studio CLI already wired in the shell startup; Arch is the alternate target.
+4. Author works on macOS with Homebrew, OrbStack (Docker engine/CLI/Compose), Powerlevel10k, oh-my-zsh, mise, Bun, Go, and LM Studio CLI already wired in the shell startup; Arch (pacman/yay) and Ubuntu (apt) are the other first-class targets.
 5. If you add Cursor rules or Copilot instruction files, summarize their location and purpose in this document so future agents inherit the constraints.
 6. Keep everything ASCII unless the upstream file already relies on Unicode glyphs (current configs are ASCII only).
 7. Always run `git status` before and after edits; never stomp user changes that may live alongside your work.
@@ -19,9 +19,9 @@
 15. Use `chezmoi cd` if you need to drop into this repo from elsewhere; it opens this same directory.
 16. New dotfiles must respect chezmoi naming (`dot_<file>`, `dot_config/<path>`, etc.) and should be added with `chezmoi add` if created outside this tree.
 17. Do not commit secrets; chezmoi supports templates and encrypted data if needed, but none are currently present.
-18. Respect macOS-specific assumptions (Homebrew paths under `/opt/homebrew`, OrbStack-provided Docker context/CLI, LM Studio CLI additions).
+18. Respect macOS-specific assumptions (Homebrew paths under `/opt/homebrew`, OrbStack-provided Docker context/CLI, LM Studio CLI additions); Arch expects pacman/yay-managed tooling; Ubuntu expects apt-managed docker.io/docker-compose and GitHub CLI repo bootstrapping.
 19. When testing environment changes, open a new shell so .zshrc reloads cleanly.
-20. Use `topgrade` via the provided `update` alias if you need to validate the global maintenance command path.
+20. Use each platform's native update workflow (brew upgrade, yay -Syu, apt upgrade, etc.) when you need to validate package installs; there is no global wrapper alias.
 
 ## BUILD / LINT / TEST COMMANDS
 21. There is no application build pipeline; validation focuses on shell startup correctness and linting.
@@ -73,7 +73,7 @@
 59. Defaults should be established with `${VAR:-default}` pattern; keep the default literal short and documented.
 60. For arrays, use parenthesis and `typeset -a` or `typeset -g` if needed; keep array definitions single-line unless readability demands multi-line.
 61. When referencing plugin lists (`plugins=(git)`), append new entries on the same line unless the list grows unwieldy, then switch to multi-line alignment with one entry per line.
-62. Keep alias names lowercase and descriptive; prefer verbs (`alias update="topgrade"`).
+62. Keep alias names lowercase and descriptive; prefer verbs (e.g., `alias gs="git status"`).
 63. When storing commands in variables, wrap them with `command ${(q)}` patterns if you need to preserve spacing.
 64. Document environment variables that influence third-party tools (e.g., `DOCKER_HOST` for Colima) to prevent unintentional overrides.
 65. Remove dead variables when they no longer serve a purpose; dotfiles should stay minimal.
@@ -95,7 +95,7 @@
 77. Keep Homebrew paths via `eval "$$(/opt/homebrew/bin/brew shellenv)"` near the top so later PATH edits see brew binaries.
 78. Mise already injects shims; avoid re-adding its bin directories unless troubleshooting.
 79. Bun completions rely on `$HOME/.bun/_bun`; wrap sourcing in existence checks to avoid warnings.
-80. OrbStack provides the Docker engine, CLI, and Compose on macOS—do not brew-install docker/compose there; Arch uses the packaged docker/docker-compose pair.
+80. OrbStack provides the Docker engine, CLI, and Compose on macOS—do not brew-install docker/compose there; Arch uses the packaged docker/docker-compose pair; Ubuntu relies on the apt `docker.io` and `docker-compose` packages plus the GitHub CLI apt repo.
 81. Powerlevel10k instant prompt block must stay at the very top to avoid prompt flicker.
 82. Keep `ZSH_THEME` and `plugins` definitions above the `source "$ZSH/oh-my-zsh.sh"` line so oh-my-zsh reads the configuration.
 83. Editor defaults (`EDITOR`, `VISUAL`) belong toward the bottom, after PATH finalization, so they inherit any environment tweaks.
@@ -151,15 +151,16 @@
 ## BRANCH & CI POLICY
 116. `main` is protected—create feature branches (e.g., `feat/*`, `fix/*`) for every change and merge via pull requests only.
 117. Never force-push or commit directly to `main`; keep history linear by rebasing feature branches before opening a PR when necessary.
-118. `.github/workflows/ci.yml` defines mandatory jobs: `lint` (shell/Neovim syntax checks), `arch`, and `macos`, with a final aggregating job named `ci`.
+118. `.github/workflows/ci.yml` defines mandatory jobs: `lint` (shell/Neovim syntax checks), `arch`, `ubuntu`, and `macos`, with a final aggregating job named `ci`.
 119. The `ci` job depends on all other jobs and is the target of branch protection—do not rename or remove it without updating repository rules.
-120. The arch and macos jobs run `chezmoi apply --force` with `CHEZMOI_INSTALL_TOOLS=1` to exercise package installs (yay/brew bundle, OrbStack cask) plus oh-my-zsh/Powerlevel10k/TPM bootstraps and Docker/Compose checks.
+120. The arch and ubuntu jobs run inside clean containers (`archlinux:latest`, `ubuntu:24.04`) as a non-root `builder` user, while the macos job runs on the hosted runner; all three run `chezmoi apply --force` with `CHEZMOI_INSTALL_TOOLS=1` to exercise package installs (yay/apt/brew bundles plus OrbStack cask) along with oh-my-zsh/Powerlevel10k/TPM bootstraps and Docker/Compose checks.
 121. When adding new CI coverage (extra OSes, lint steps), document the change here and ensure the new job is included in the `ci` job’s `needs` list.
 
 ## AUTOMATED TOOL INSTALLS
 121. `run_after_install-tools.sh` executes on every `chezmoi apply` and installs platform packages plus `mise` toolchains; keep it idempotent.
-122. Package manifests live at the repo root (`Brewfile`, `packages-arch.txt`); update them to add/remove dependencies and keep comments concise.
-123. The script detects macOS (brew bundle) and Arch (yay + package list). Extend it if you add new OS support.
+122. Package manifests live at the repo root (`Brewfile`, `packages-arch.txt`, `packages-ubuntu.txt`); update them to add/remove dependencies and keep comments concise.
+123. The script detects macOS (brew bundle), Arch (yay + package list), and Ubuntu/Debian (apt + GitHub CLI repo plus fd/bat shims); keep all three paths idempotent and extend only when necessary.
 124. The installer also bootstraps oh-my-zsh, Powerlevel10k, and tmux TPM when missing; keep those paths consistent with `.zshrc`/`.tmux.conf` expectations.
 125. Guard long installs by setting `CHEZMOI_INSTALL_TOOLS=0` when you want to skip them (e.g., ad-hoc testing); document permanent skips in AGENTS first.
 126. `.mise.toml` is tracked as `dot_mise.toml`; run `mise install` or `mise apply` whenever tool versions change and commit the updated file.
+127. `run_after_install-tools.sh` automatically runs `mise trust --yes ~/.mise.toml` before installing tools so fresh systems do not prompt; keep this behavior if you relocate the config.
