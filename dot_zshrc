@@ -119,6 +119,10 @@ source "$ZSH/oh-my-zsh.sh"
 # PATH
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/go/bin
 
+if [[ -d "$HOME/.cargo/bin" ]]; then
+  export PATH="$PATH:$HOME/.cargo/bin"
+fi
+
 # bun completions
 # shellcheck disable=SC1091
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
@@ -153,6 +157,3 @@ fi
 # Editor
 export EDITOR="nvim"
 export VISUAL="code --wait"
-
-# Maintenance - update everything with one command
-alias update="topgrade"

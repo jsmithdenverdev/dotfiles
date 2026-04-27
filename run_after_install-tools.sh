@@ -92,6 +92,98 @@ ensure_mise() {
   ensure_path_entry "$HOME/.local/bin"
 }
 
+ensure_github_cli_repo() {
+  if command_exists gh; then
+    return
+  fi
+
+  local list_file="/etc/apt/sources.list.d/github-cli.list"
+  local keyring="/usr/share/keyrings/githubcli-archive-keyring.gpg"
+  if [[ -f $list_file ]]; then
+    return
+  fi
+
+  log "Adding GitHub CLI apt repository"
+  local tmp_key
+  tmp_key=$(mktemp)
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o "$tmp_key"
+  run_as_root install -o root -g root -m 644 "$tmp_key" "$keyring"
+  rm -f "$tmp_key"
+  local arch
+  arch=$(dpkg --print-architecture)
+  printf 'deb [arch=%s signed-by=%s] https://cli.github.com/packages stable main\n' "$arch" "$keyring" |
+    run_as_root tee "$list_file" >/dev/null
+}
+
+ensure_fd_shortcut() {
+  if command_exists fd || ! command_exists fdfind; then
+    return
+  fi
+
+  log "Creating fd shortcut for fdfind"
+  run_as_root install -d /usr/local/bin
+  run_as_root ln -sf "$(command -v fdfind)" /usr/local/bin/fd
+}
+
+ensure_bat_shortcut() {
+  if command_exists bat || ! command_exists batcat; then
+    return
+  fi
+
+  log "Creating bat shortcut for batcat"
+  run_as_root install -d /usr/local/bin
+  run_as_root ln -sf "$(command -v batcat)" /usr/local/bin/bat
+}
+
+install_ubuntu_packages() {
+  log "Installing Ubuntu packages"
+
+  run_as_root apt-get update
+
+  local prerequisites=(
+    apt-transport-https
+    ca-certificates
+    curl
+    gnupg
+  )
+  run_as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${prerequisites[@]}"
+
+  ensure_github_cli_repo
+
+  run_as_root apt-get update
+
+  local packages=()
+  if [[ -f "$source_dir/packages-ubuntu.txt" ]]; then
+    while IFS= read -r line; do
+      [[ -z $line || $line =~ ^# ]] && continue
+      packages+=("$line")
+    done <"$source_dir/packages-ubuntu.txt"
+  fi
+
+  if (( ${#packages[@]} )); then
+    run_as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
+  fi
+
+  ensure_fd_shortcut
+  ensure_bat_shortcut
+}
+
+trust_mise_config() {
+  local mise_config="$HOME/.mise.toml"
+  if [[ ! -f "$mise_config" ]]; then
+    return
+  fi
+
+  if ! command_exists mise; then
+    return
+  fi
+
+  log "Trusting mise configuration $mise_config"
+  if ! mise trust --yes "$mise_config" >/dev/null 2>&1; then
+    log "Failed to trust $mise_config"
+  fi
+}
+
 run_mise_install() {
   ensure_path_entry "$HOME/.local/bin"
   if [[ -f "$HOME/.mise.toml" ]]; then
@@ -103,6 +195,7 @@ run_mise_install() {
     return
   fi
 
+  trust_mise_config
   log "Running mise install"
   mise install
 }
@@ -160,9 +253,11 @@ main() {
     . /etc/os-release
     case "$ID" in
       arch|endeavouros|manjaro) os="arch" ;;
+      ubuntu|debian|pop|linuxmint) os="ubuntu" ;;
       *)
         case "$ID_LIKE" in
           *arch*) os="arch" ;;
+          *debian*) os="ubuntu" ;;
         esac
         ;;
     esac
@@ -174,6 +269,9 @@ main() {
       ;;
     arch)
       install_arch_packages
+      ;;
+    ubuntu)
+      install_ubuntu_packages
       ;;
     *)
       log "Unsupported OS ($os), skipping package installation"

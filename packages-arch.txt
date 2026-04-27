@@ -20,4 +20,3 @@ github-cli
 taplo-cli
 ttf-firacode-nerd
 bats
-topgrade

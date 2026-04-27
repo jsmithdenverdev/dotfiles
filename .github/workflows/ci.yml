@@ -101,6 +101,44 @@ jobs:
           docker-compose --version
           EOF
 
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chezmoi zsh
+
+      - name: Apply chezmoi to test home
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          HOME_DIR: ${{ runner.temp }}/chezmoi-home
+          CHEZMOI_INSTALL_TOOLS: 1
+        run: |
+          HOME="$HOME_DIR"
+          rm -rf "$HOME"
+          mkdir -p "$HOME"
+          HOME="$HOME" XDG_CONFIG_HOME="$HOME/.config" chezmoi apply --source "$WORKSPACE" --destination "$HOME" --force
+
+      - name: Verify rendered files
+        env:
+          HOME_DIR: ${{ runner.temp }}/chezmoi-home
+        run: |
+          HOME="$HOME_DIR"
+          test -f "$HOME/.zshrc"
+          test -f "$HOME/.config/nvim/init.vim"
+          test -f "$HOME/.config/vim/plugins.vim"
+          zsh -n "$HOME/.zshrc"
+          test -d "$HOME/.oh-my-zsh"
+          test -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+          test -d "$HOME/.tmux/plugins/tpm"
+          docker --version
+          docker-compose --version
+          gh --version
+
   macos:
     runs-on: macos-latest
     steps:
@@ -148,6 +186,7 @@ jobs:
     needs:
       - lint
       - arch
+      - ubuntu
       - macos
     steps:
       - name: All checks passed

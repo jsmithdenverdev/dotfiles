@@ -6,4 +6,5 @@ README.md
 AGENTS.md
 Brewfile
 packages-arch.txt
+packages-ubuntu.txt
 packages-fedora.txt

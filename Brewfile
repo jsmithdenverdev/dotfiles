@@ -42,6 +42,3 @@ cask "font-fira-code-nerd-font"
 
 # Testing Tools
 brew "bats-core"     # Bash Automated Testing System
-
-# Maintenance
-brew "topgrade"      # Universal updater
