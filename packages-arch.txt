@@ -15,7 +15,7 @@ docker
 docker-compose
 alacritty
 code
-mise-bin
+mise
 github-cli
 taplo-cli
 ttf-firacode-nerd

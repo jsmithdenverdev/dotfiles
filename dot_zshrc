@@ -154,6 +154,10 @@ if command -v mise >/dev/null 2>&1; then
     eval "$(mise activate zsh)"
 fi
 
+# opencode attach defaults
+export OPENCODE_HOST="${OPENCODE_HOST:-127.0.0.1}"
+export OPENCODE_PORT="${OPENCODE_PORT:-4096}"
+
 # Editor
 export EDITOR="nvim"
 export VISUAL="code --wait"
