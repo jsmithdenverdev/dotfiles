@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# --- Configuration ---
-MAX_NAME_LEN=20
-
 # --- Helper Functions ---
 
 die() {
@@ -41,10 +38,10 @@ check_dep "lazygit"
 TARGET_DIR=$(realpath "$TARGET_DIR")
 [[ ! -d "$TARGET_DIR" ]] && die "'$TARGET_DIR' is not a directory."
 
-# Sanitize & Truncate Session Name
-# 1. Get basename 2. Replace dots/colons 3. Truncate to MAX_NAME_LEN
+# Sanitize Session Name
+# 1. Get basename 2. Replace dots/colons/spaces with underscores
 RAW_NAME=$(basename "$TARGET_DIR" | tr '.: ' '_')
-SESSION_NAME="${RAW_NAME:0:$MAX_NAME_LEN}"
+SESSION_NAME="$RAW_NAME"
 
 # --- Kill Switch Logic ---
 
@@ -70,7 +67,7 @@ if [[ -z "$TMUX" ]]; then
         tmux new-session -d -s "$SESSION_NAME" -n "opencode" -c "$TARGET_DIR"
         
         # Setup windows
-        tmux send-keys -t "$SESSION_NAME:opencode" "opencode" C-m
+        tmux send-keys -t "$SESSION_NAME:opencode" "opencode attach http://127.0.0.1:4096 --dir ." C-m
         tmux new-window  -t "$SESSION_NAME" -n "yazi" -c "$TARGET_DIR" "yazi"
         tmux new-window  -t "$SESSION_NAME" -n "lazygit" -c "$TARGET_DIR" "lazygit"
         
@@ -84,7 +81,7 @@ else
     
     # Rename current window to opencode if it's just a shell
     tmux rename-window "opencode"
-    tmux send-keys "opencode" C-m
+    tmux send-keys "opencode attach http://127.0.0.1:4096 --dir ." C-m
     
     tmux new-window -n "yazi" -c "$TARGET_DIR" "yazi"
     tmux new-window -n "lazygit" -c "$TARGET_DIR" "lazygit"
