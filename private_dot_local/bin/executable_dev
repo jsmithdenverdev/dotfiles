@@ -35,6 +35,10 @@ check_dep "opencode"
 check_dep "yazi"
 check_dep "lazygit"
 
+OPENCODE_HOST="${OPENCODE_HOST:-127.0.0.1}"
+OPENCODE_PORT="${OPENCODE_PORT:-4096}"
+OPENCODE_ATTACH_CMD="opencode attach http://${OPENCODE_HOST}:${OPENCODE_PORT} --dir ."
+
 TARGET_DIR=$(realpath "$TARGET_DIR")
 [[ ! -d "$TARGET_DIR" ]] && die "'$TARGET_DIR' is not a directory."
 
@@ -67,7 +71,7 @@ if [[ -z "$TMUX" ]]; then
         tmux new-session -d -s "$SESSION_NAME" -n "opencode" -c "$TARGET_DIR"
         
         # Setup windows
-        tmux send-keys -t "$SESSION_NAME:opencode" "opencode attach http://127.0.0.1:4096 --dir ." C-m
+        tmux send-keys -t "$SESSION_NAME:opencode" "$OPENCODE_ATTACH_CMD" C-m
         tmux new-window  -t "$SESSION_NAME" -n "yazi" -c "$TARGET_DIR" "yazi"
         tmux new-window  -t "$SESSION_NAME" -n "lazygit" -c "$TARGET_DIR" "lazygit"
         
@@ -81,7 +85,7 @@ else
     
     # Rename current window to opencode if it's just a shell
     tmux rename-window "opencode"
-    tmux send-keys "opencode attach http://127.0.0.1:4096 --dir ." C-m
+    tmux send-keys "$OPENCODE_ATTACH_CMD" C-m
     
     tmux new-window -n "yazi" -c "$TARGET_DIR" "yazi"
     tmux new-window -n "lazygit" -c "$TARGET_DIR" "lazygit"
